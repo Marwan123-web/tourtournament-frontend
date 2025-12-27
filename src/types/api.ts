@@ -52,3 +52,10 @@ export interface CreateTournamentDto {
     username?: string;
   }
   
+  export interface Player {
+    id: string;
+    name: string;
+    position: string;
+    jerseyNumber: number;
+    isCaptain: boolean;
+  }
