@@ -55,8 +55,14 @@ export interface TeamStanding {
 
 export interface User {
   id: number;
-  email: string;
+  email?: string;
   username?: string;
+  name: string;
+  surname: string;
+  role: string;
+  createdAt: string;
+  updatedAt: string;
+  isActive: boolean;
 }
 
 export interface Player {
@@ -99,4 +105,11 @@ export interface Match {
   scheduledAt: string;
   status: MatchStatus;
   round: string;
+}
+
+export interface ApiError {
+  statusCode: number;
+  message: string;
+  timestamp: string;
+  path: string;
 }
