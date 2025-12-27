@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { User, Tournament } from "@/types/api";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
@@ -55,17 +56,7 @@ export default function ProfilePage() {
   };
 
   // ✅ Loading state prevents render issues
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-lg text-gray-500">Loading profile...</p>
-        </div>
-      </div>
-    );
-  }
-
+  if (loading) return <LoadingSpinner size="xl" message="Loading profile..." />;
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

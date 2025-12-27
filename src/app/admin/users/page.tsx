@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import type { User } from "@/types/api";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function AdminUsers() {
   const [users, setUsers] = useState<User[]>([]);
@@ -30,7 +31,7 @@ export default function AdminUsers() {
         user.username.toLowerCase().includes(search.toLowerCase()))
   );
 
-  if (loading) return <div className="p-8 text-center">Loading users...</div>;
+  if (loading) return <LoadingSpinner size="xl" message="Loading users..." />;
 
   return (
     <div className="p-8 max-w-7xl mx-auto">

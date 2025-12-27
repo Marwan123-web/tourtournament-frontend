@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Tournament, TeamStanding, Team } from "@/types/api";
 import { TournamentStatus } from "@/enums/enums";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function TournamentDetail() {
   const params = useParams();
@@ -43,7 +44,8 @@ export default function TournamentDetail() {
   };
 
   if (loading)
-    return <div className="p-8 text-center">Loading tournament...</div>;
+    return <LoadingSpinner size="xl" message="Loading tournament..." />;
+
   if (!tournament)
     return <div className="p-8 text-center">Tournament not found</div>;
 

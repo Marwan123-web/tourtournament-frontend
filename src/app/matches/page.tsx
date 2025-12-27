@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Match } from "@/types/api";
 import { MatchStatus } from "@/enums/enums";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function MatchesPage() {
   const [matches, setMatches] = useState<Match[]>([]);
@@ -88,7 +89,7 @@ export default function MatchesPage() {
     }
   };
 
-  if (loading) return <div className="p-8 text-center">Loading matches...</div>;
+  if (loading) return <LoadingSpinner size="xl" message="Loading matches..." />;
 
   return (
     <div className="p-8 max-w-7xl mx-auto">

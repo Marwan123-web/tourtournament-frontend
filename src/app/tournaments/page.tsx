@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Tournament } from "@/types/api";
 import { Sport } from "@/enums/enums";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function TournamentsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
@@ -49,7 +50,7 @@ export default function TournamentsPage() {
   };
 
   if (loading)
-    return <div className="p-8 text-center">Loading tournaments...</div>;
+    return <LoadingSpinner size="xl" message="Loading tournaments..." />;
 
   return (
     <div className="p-8 max-w-7xl mx-auto">

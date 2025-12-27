@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Booking, Field } from "@/types/api";
 import { BookingStatus, Sport } from "@/enums/enums";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function FieldsPage() {
   const [fields, setFields] = useState<Field[]>([]);
@@ -87,7 +88,7 @@ export default function FieldsPage() {
     }
   };
 
-  if (loading) return <div className="p-8 text-center">Loading fields...</div>;
+  if (loading) return <LoadingSpinner size="xl" message="Loading fields..." />;
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
