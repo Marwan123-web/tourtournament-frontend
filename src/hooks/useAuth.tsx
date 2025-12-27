@@ -1,5 +1,11 @@
 'use client';
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { 
+  createContext, 
+  useContext, 
+  useEffect, 
+  useState, 
+  ReactNode 
+} from 'react';  // ✅ ReactNode added
 import { authApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import type { User } from '@/types/api';
@@ -14,7 +20,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {  // ✅ ReactNode type
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
