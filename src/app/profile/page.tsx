@@ -1,0 +1,210 @@
+"use client";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import type { User, Tournament } from "@/types/api";
+
+export default function ProfilePage() {
+  const [user, setUser] = useState<User | null>(null);
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editMode, setEditMode] = useState(false);
+  const [formData, setFormData] = useState({ username: "", email: "" });
+  const router = useRouter();
+
+  // ✅ Function declared BEFORE useEffect
+  const fetchProfile = async () => {
+    try {
+      const res = await fetch("/api/profile");
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data = await res.json();
+
+      setUser(data.user);
+      setFormData({
+        username: data.user.username || "",
+        email: data.user.email,
+      });
+      setTournaments(data.tournaments || []);
+    } catch (error) {
+      console.error("Failed to fetch profile:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ Safe useEffect - no cascading renders
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (res.ok) {
+        setEditMode(false);
+        fetchProfile();
+      }
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+    }
+  };
+
+  // ✅ Loading state prevents render issues
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <p className="text-lg text-gray-500">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-xl text-gray-500">Profile not found</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Profile Header */}
+        <div className="text-center mb-12">
+          <div className="w-32 h-32 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full mx-auto mb-6 flex items-center justify-center shadow-2xl">
+            <span className="text-4xl font-bold text-white">👤</span>
+          </div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            {user.username || user.email}
+          </h1>
+          <p className="text-xl text-gray-500">Member since 2025</p>
+        </div>
+
+        {/* Profile Edit Form */}
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 mb-12">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">
+              Profile Settings
+            </h2>
+            <button
+              onClick={() => setEditMode(!editMode)}
+              className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+            >
+              {editMode ? "Cancel" : "Edit Profile"}
+            </button>
+          </div>
+
+          {editMode ? (
+            <form onSubmit={handleUpdateProfile} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  value={formData.username}
+                  onChange={(e) =>
+                    setFormData({ ...formData, username: e.target.value })
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                  placeholder="Enter username"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                  placeholder="Enter email"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-indigo-600 text-white py-3 px-6 rounded-lg hover:bg-indigo-700 font-semibold transition-colors"
+              >
+                Save Changes
+              </button>
+            </form>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Username
+                </label>
+                <p className="text-lg font-semibold text-gray-900">
+                  {user.username || "Not set"}
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email
+                </label>
+                <p className="text-lg font-semibold text-gray-900">
+                  {user.email}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* My Tournaments */}
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            My Tournaments ({tournaments.length})
+          </h2>
+          {tournaments.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg">
+                No tournaments created yet
+              </p>
+              <a
+                href="/tournaments"
+                className="mt-4 inline-block bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700"
+              >
+                Create First Tournament
+              </a>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {tournaments.map((tournament) => (
+                <div
+                  key={tournament.id}
+                  className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-all hover:-translate-y-1"
+                >
+                  <h3 className="font-bold text-xl text-gray-900 mb-2">
+                    {tournament.name}
+                  </h3>
+                  <p className="text-sm text-gray-500 mb-2 capitalize">
+                    {tournament.sport}
+                  </p>
+                  <span className="px-3 py-1 bg-indigo-100 text-indigo-800 text-xs font-medium rounded-full mb-4 inline-block">
+                    {tournament.status}
+                  </span>
+                  <p className="text-sm text-gray-500">
+                    {tournament.currentTeams}/{tournament.maxTeams} teams
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
