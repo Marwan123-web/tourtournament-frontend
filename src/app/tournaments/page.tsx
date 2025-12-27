@@ -1,20 +1,19 @@
-'use client';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Tournament } from '@/types/api';
-
-
+"use client";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Tournament } from "@/types/api";
+import { Sport } from "@/enums/enums";
 
 export default function TournamentsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newTournament, setNewTournament] = useState({
-    name: '',
-    sport: 'football' as 'football' | 'volleyball' | 'basketball',
+    name: "",
+    sport: Sport.FOOTBALL as Sport,
     maxTeams: 16,
-    startDate: '',
-    endDate: ''
+    startDate: "",
+    endDate: "",
   });
   const router = useRouter();
 
@@ -24,11 +23,11 @@ export default function TournamentsPage() {
 
   const fetchTournaments = async () => {
     try {
-      const res = await fetch('/api/tournaments');
+      const res = await fetch("/api/tournaments");
       const data = await res.json();
       setTournaments(data);
     } catch (error) {
-      console.error('Failed to fetch tournaments');
+      console.error("Failed to fetch tournaments");
     } finally {
       setLoading(false);
     }
@@ -37,19 +36,20 @@ export default function TournamentsPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await fetch('/api/tournaments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      await fetch("/api/tournaments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newTournament),
       });
       setShowCreateModal(false);
       fetchTournaments();
     } catch (error) {
-      console.error('Failed to create tournament');
+      console.error("Failed to create tournament");
     }
   };
 
-  if (loading) return <div className="p-8 text-center">Loading tournaments...</div>;
+  if (loading)
+    return <div className="p-8 text-center">Loading tournaments...</div>;
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
@@ -65,15 +65,28 @@ export default function TournamentsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {tournaments.map((tournament) => (
-          <div key={tournament.id} className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow p-6">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">{tournament.name}</h3>
-            <p className="text-sm text-gray-500 mb-4">Starts: {new Date(tournament.startDate).toLocaleDateString()}</p>
-            <p className="text-sm text-gray-500 mb-4">{tournament.currentTeams}/{tournament.maxTeams || '?'} teams</p>
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-              tournament.status === 'registration' ? 'bg-green-100 text-green-800' :
-              tournament.status === 'ongoing' ? 'bg-yellow-100 text-yellow-800' :
-              'bg-gray-100 text-gray-800'
-            }`}>
+          <div
+            key={tournament.id}
+            className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow p-6"
+          >
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              {tournament.name}
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Starts: {new Date(tournament.startDate).toLocaleDateString()}
+            </p>
+            <p className="text-sm text-gray-500 mb-4">
+              {tournament.currentTeams}/{tournament.maxTeams || "?"} teams
+            </p>
+            <span
+              className={`px-3 py-1 rounded-full text-xs font-medium ${
+                tournament.status === "registration"
+                  ? "bg-green-100 text-green-800"
+                  : tournament.status === "ongoing"
+                  ? "bg-yellow-100 text-yellow-800"
+                  : "bg-gray-100 text-gray-800"
+              }`}
+            >
               {tournament.status.toUpperCase()}
             </span>
             <button
@@ -96,14 +109,21 @@ export default function TournamentsPage() {
                 type="text"
                 placeholder="Tournament Name"
                 value={newTournament.name}
-                onChange={(e) => setNewTournament({...newTournament, name: e.target.value})}
+                onChange={(e) =>
+                  setNewTournament({ ...newTournament, name: e.target.value })
+                }
                 className="w-full p-3 border border-gray-300 rounded-lg"
                 required
               />
               <input
                 type="date"
                 value={newTournament.startDate}
-                onChange={(e) => setNewTournament({...newTournament, startDate: e.target.value})}
+                onChange={(e) =>
+                  setNewTournament({
+                    ...newTournament,
+                    startDate: e.target.value,
+                  })
+                }
                 className="w-full p-3 border border-gray-300 rounded-lg"
                 required
               />
@@ -111,12 +131,20 @@ export default function TournamentsPage() {
                 type="number"
                 placeholder="Max Teams (e.g. 16)"
                 value={newTournament.maxTeams}
-                onChange={(e) => setNewTournament({...newTournament, maxTeams: parseInt(e.target.value)})}
+                onChange={(e) =>
+                  setNewTournament({
+                    ...newTournament,
+                    maxTeams: parseInt(e.target.value),
+                  })
+                }
                 className="w-full p-3 border border-gray-300 rounded-lg"
                 required
               />
               <div className="flex gap-3 pt-4">
-                <button type="submit" className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700">
+                <button
+                  type="submit"
+                  className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700"
+                >
                   Create
                 </button>
                 <button
