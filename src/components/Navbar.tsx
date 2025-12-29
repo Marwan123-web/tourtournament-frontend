@@ -33,7 +33,7 @@ export default function Navbar() {
           </Link>
           {user ? (
             <>
-              <Link href="/tournaments/new">
+              <Link href="/tournaments">
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
                   Create

@@ -29,7 +29,7 @@ export default function Home() {
               </Button>
             </Link>
             {user && (
-              <Link href="/tournaments/new">
+              <Link href="/tournaments">
                 <Button size="lg" variant="outline" className="text-lg px-8">
                   <Calendar className="mr-2 h-5 w-5" />
                   Create Tournament
@@ -81,7 +81,7 @@ export default function Home() {
         <p className="text-xl mb-8 opacity-90 max-w-md mx-auto">
           Create your first tournament in 30 seconds
         </p>
-        <Link href={user ? '/tournaments/new' : '/auth/signup'}>
+        <Link href={user ? '/tournaments' : '/auth/signup'}>
           <Button size="lg" className="text-lg px-12 bg-white text-indigo-600 hover:bg-white/90">
             Get Started Free
           </Button>

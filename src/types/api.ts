@@ -109,7 +109,11 @@ export interface Match {
 
 export interface ApiError {
   statusCode: number;
-  message: string;
+  message: {
+    error: string;
+    message: string;
+    statusCode: number;
+  };
   timestamp: string;
   path: string;
 }

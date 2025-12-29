@@ -1,17 +1,22 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Tournament } from "@/types/api";
-import { Sport } from "@/enums/enums";
+import Link from "next/link";
+import type { Tournament } from "@/types/api";
+import { Sport, TournamentStatus } from "@/enums/enums";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { tournamentApi, getErrorMessage } from "@/lib/api"; // ✅ API + Error hook
+import { toast } from "react-toastify";
 
 export default function TournamentsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(""); // ✅ Error state
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [creating, setCreating] = useState(false); // ✅ Create loading
   const [newTournament, setNewTournament] = useState({
     name: "",
-    sport: Sport.FOOTBALL as Sport,
+    sport: Sport.FOOTBALL,
     maxTeams: 16,
     startDate: "",
     endDate: "",
@@ -23,12 +28,17 @@ export default function TournamentsPage() {
   }, []);
 
   const fetchTournaments = async () => {
+    setLoading(true);
+    setError("");
+
     try {
-      const res = await fetch("/api/tournaments");
-      const data = await res.json();
+      const data = await tournamentApi.getTournaments();
       setTournaments(data);
-    } catch (error) {
-      console.error("Failed to fetch tournaments");
+      toast.success("Tournaments got Successfully");
+    } catch (error: unknown) {
+      // ✅ ESLint safe error handling
+      // console.error("Failed to fetch tournaments:", error);
+      setError(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -36,21 +46,63 @@ export default function TournamentsPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    setCreating(true);
+
     try {
-      await fetch("/api/tournaments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newTournament),
-      });
+      // ✅ Uses your typed API
+      await tournamentApi.createTournament(newTournament);
       setShowCreateModal(false);
+      setNewTournament({
+        name: "",
+        sport: Sport.FOOTBALL,
+        maxTeams: 16,
+        startDate: "",
+        endDate: "",
+      });
       fetchTournaments();
-    } catch (error) {
-      console.error("Failed to create tournament");
+      toast.success("Tournament created Successfully");
+    } catch (error: unknown) {
+      // ✅ Perfect error UX
+      // console.error("Failed to create tournament:", error);
+      // alert(getErrorMessage(error));
+    } finally {
+      setCreating(false);
     }
   };
 
-  if (loading)
+  const getStatusColor = (status: string) => {
+    switch (status as TournamentStatus) {
+      case TournamentStatus.REGISTRATION:
+        return "bg-green-100 text-green-800";
+      case TournamentStatus.ONGOING:
+        return "bg-yellow-100 text-yellow-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  if (loading) {
     return <LoadingSpinner size="xl" message="Loading tournaments..." />;
+  }
+
+  if (error) {
+    return (
+      <div className="p-8 max-w-7xl mx-auto">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center max-w-2xl mx-auto">
+          <h2 className="text-2xl font-bold text-red-800 mb-4">
+            Failed to load tournaments
+          </h2>
+          <p className="text-red-700 mb-6">{error}</p>
+          <button
+            onClick={fetchTournaments}
+            className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
@@ -58,7 +110,8 @@ export default function TournamentsPage() {
         <h1 className="text-3xl font-bold text-gray-900">Tournaments</h1>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700"
+          className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2"
+          disabled={creating}
         >
           Create Tournament
         </button>
@@ -77,16 +130,12 @@ export default function TournamentsPage() {
               Starts: {new Date(tournament.startDate).toLocaleDateString()}
             </p>
             <p className="text-sm text-gray-500 mb-4">
-              {tournament.currentTeams}/{tournament.maxTeams || "?"} teams
+              {tournament.currentTeams}/{tournament.maxTeams} teams
             </p>
             <span
-              className={`px-3 py-1 rounded-full text-xs font-medium ${
-                tournament.status === "registration"
-                  ? "bg-green-100 text-green-800"
-                  : tournament.status === "ongoing"
-                  ? "bg-yellow-100 text-yellow-800"
-                  : "bg-gray-100 text-gray-800"
-              }`}
+              className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                tournament.status
+              )}`}
             >
               {tournament.status.toUpperCase()}
             </span>
@@ -113,9 +162,25 @@ export default function TournamentsPage() {
                 onChange={(e) =>
                   setNewTournament({ ...newTournament, name: e.target.value })
                 }
-                className="w-full p-3 border border-gray-300 rounded-lg"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                 required
+                disabled={creating}
               />
+              <select
+                value={newTournament.sport}
+                onChange={(e) =>
+                  setNewTournament({
+                    ...newTournament,
+                    sport: e.target.value as Sport,
+                  })
+                }
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                disabled={creating}
+              >
+                <option value={Sport.FOOTBALL}>Football</option>
+                <option value={Sport.VOLLEYBALL}>Volleyball</option>
+                <option value={Sport.BASKETBALL}>Basketball</option>
+              </select>
               <input
                 type="date"
                 value={newTournament.startDate}
@@ -125,8 +190,22 @@ export default function TournamentsPage() {
                     startDate: e.target.value,
                   })
                 }
-                className="w-full p-3 border border-gray-300 rounded-lg"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                 required
+                disabled={creating}
+              />
+              <input
+                type="date"
+                value={newTournament.endDate}
+                onChange={(e) =>
+                  setNewTournament({
+                    ...newTournament,
+                    endDate: e.target.value,
+                  })
+                }
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                required
+                disabled={creating}
               />
               <input
                 type="number"
@@ -138,20 +217,26 @@ export default function TournamentsPage() {
                     maxTeams: parseInt(e.target.value),
                   })
                 }
-                className="w-full p-3 border border-gray-300 rounded-lg"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                min="2"
+                max="128"
                 required
+                disabled={creating}
               />
               <div className="flex gap-3 pt-4">
                 <button
                   type="submit"
-                  className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700"
+                  disabled={creating}
+                  className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  Create
+                  {creating ? <LoadingSpinner size="sm" /> : null}
+                  {creating ? "Creating..." : "Create"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 bg-gray-200 text-gray-900 py-2 px-4 rounded-lg hover:bg-gray-300"
+                  disabled={creating}
+                  className="flex-1 bg-gray-200 text-gray-900 py-2 px-4 rounded-lg hover:bg-gray-300 disabled:opacity-50"
                 >
                   Cancel
                 </button>

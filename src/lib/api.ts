@@ -7,6 +7,7 @@ import type {
   User,
   ApiError,
 } from "@/types/api";
+import { toast } from "react-toastify";
 
 const api = axios.create({
   baseURL: "http://localhost:4000",
@@ -28,18 +29,21 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError<ApiError>) => {
-    console.error("API Error:", {
-      message: error.response?.data?.message || error.message,
-      status: error.response?.status,
-      path: error.response?.data?.path,
-    });
+    // console.error("API Error:", {
+    //   message: error.response?.data?.message || error.message,
+    //   status: error.response?.status,
+    //   path: error.response?.data?.path,
+    // });
+    toast.error(error.response?.data?.message?.message);
     return Promise.reject(error);
   }
 );
 
 export const getErrorMessage = (error: unknown): string => {
   if (error instanceof AxiosError) {
-    return error.response?.data?.message || error.message || "Server error";
+    return (
+      error.response?.data?.message?.message || error.message || "Server error"
+    );
   }
   return "Network error. Please try again.";
 };
@@ -47,22 +51,22 @@ export const getErrorMessage = (error: unknown): string => {
 export const tournamentApi = {
   // Tournaments
   getTournaments: () =>
-    api.get<Tournament[]>("/tournaments").then((res) => res.data),
+    api.get<Tournament[]>("api/tournaments").then((res) => res.data),
   createTournament: (data: CreateTournamentDto) =>
-    api.post<Tournament>("/tournaments", data).then((res) => res.data),
+    api.post<Tournament>("api/tournaments", data).then((res) => res.data),
   getTournament: (id: string) =>
-    api.get<Tournament>(`/tournaments/${id}`).then((res) => res.data),
+    api.get<Tournament>(`api/tournaments/${id}`).then((res) => res.data),
 
   // Teams
   getTeamsByTournament: (tournamentId: string) =>
     api
-      .get<Team[]>(`/teams/tournament/${tournamentId}`)
+      .get<Team[]>(`api/teams/tournament/${tournamentId}`)
       .then((res) => res.data),
 
   // Standings
   getStandings: (tournamentId: string) =>
     api
-      .get<TeamStanding[]>(`/standings/tournament/${tournamentId}`)
+      .get<TeamStanding[]>(`api/standings/tournament/${tournamentId}`)
       .then((res) => res.data),
 };
 
