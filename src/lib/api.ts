@@ -146,9 +146,33 @@ export const matchesApi = {
 };
 
 export const teamsApi = {
+  // Create new team (POST /api/teams)
+  createTeam: (data: { tournamentId: string; name: string; sport: string }) =>
+    api.post("/api/teams", data).then((res) => res.data),
+
+  // Get teams by tournament (GET /api/teams/tournament/:tournamentId)
   getTournamentTeams: (tournamentId: string) =>
     api
       .get<Team[]>(`/api/teams/tournament/${tournamentId}`)
       .then((res) => res.data),
+
+  // Get single team (GET /api/teams/:id)
+  getTeam: (teamId: string) =>
+    api.get<Team>(`/api/teams/${teamId}`).then((res) => res.data),
+};
+
+export const playersApi = {
+  // Add player to team (POST /api/teams/:id/players) - assuming this exists
+  addPlayer: (playerData: {
+    name: string;
+    position: string;
+    jerseyNumber: string;
+    isCaptain: boolean;
+    teamId: string;
+  }) => api.post(`/api/players`, playerData).then((res) => res.data),
+
+  // Delete player from team (DELETE /api/teams/:id/players/:playerId)
+  deletePlayer: (teamId: string, playerId: string) =>
+    api.delete(`/api/players/${playerId}`).then((res) => res.data),
 };
 export default api;

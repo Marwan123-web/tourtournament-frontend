@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { Tournament, TeamStanding, Team } from "@/types/api";
 import { TournamentStatus } from "@/enums/enums";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
-import { tournamentApi, getErrorMessage } from "@/lib/api"; // ✅ API + Error hook
+import { tournamentApi, teamsApi, getErrorMessage } from "@/lib/api";
 
 export default function TournamentDetail() {
   const params = useParams();
@@ -14,7 +14,13 @@ export default function TournamentDetail() {
   const [standings, setStandings] = useState<TeamStanding[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(""); // ✅ Error state
+  const [updating, setUpdating] = useState(false);
+  const [error, setError] = useState("");
+  const [showCreateTeam, setShowCreateTeam] = useState(false);
+  const [newTeam, setNewTeam] = useState({
+    name: "",
+    sport: "football",
+  });
 
   useEffect(() => {
     if (params.id) fetchTournament();
@@ -34,24 +40,47 @@ export default function TournamentDetail() {
       setTournament(tournamentData);
       setStandings(standingsData);
       setTeams(teamsData);
+      // Set default sport from tournament
+      setNewTeam((prev) => ({ ...prev, sport: tournamentData.sport }));
     } catch (error: unknown) {
-      // ✅ Perfect error handling - ESLint safe!
-      // console.error("Failed to fetch tournament:", error);
       setError(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
   };
 
-  const handleJoinTeam = async (teamId: string) => {
+  // const handleJoinTeam = async (teamId: string) => {
+  //   setUpdating(true);
+  //   setError("");
+
+  //   try {
+  //     await tournamentApi.joinTeam(params.id as string, teamId);
+  //     fetchTournament(); // Refresh data
+  //   } catch (error: unknown) {
+  //     setError(getErrorMessage(error));
+  //   } finally {
+  //     setUpdating(false);
+  //   }
+  // };
+
+  const handleCreateTeam = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setUpdating(true);
+    setError("");
+
     try {
-      await fetch(`/api/tournaments/${params.id}/join-team/${teamId}`, {
-        method: "POST",
+      await teamsApi.createTeam({
+        tournamentId: params.id as string,
+        name: newTeam.name,
+        sport: newTeam.sport,
       });
-      fetchTournament(); // Refresh data
+      setShowCreateTeam(false);
+      setNewTeam({ name: "", sport: tournament?.sport || "football" });
+      fetchTournament(); // Refresh teams list
     } catch (error: unknown) {
-      // console.error("Failed to join team:", error);
-      // alert(getErrorMessage(error)); // ✅ User feedback
+      setError(getErrorMessage(error));
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -67,9 +96,10 @@ export default function TournamentDetail() {
           <p className="text-red-700 mb-6">{error}</p>
           <button
             onClick={fetchTournament}
-            className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700"
+            disabled={updating}
+            className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
           >
-            Retry
+            {updating ? "Loading..." : "Retry"}
           </button>
         </div>
       </div>
@@ -94,10 +124,8 @@ export default function TournamentDetail() {
     );
   }
 
-  // Rest of JSX remains EXACTLY the same...
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      {/* Your existing JSX - unchanged */}
       <div className="flex justify-between items-start mb-8">
         <div>
           <Link
@@ -126,7 +154,7 @@ export default function TournamentDetail() {
             </span>
           </div>
         </div>
-        <div className="text-right">
+        <div className="flex flex-col items-end gap-2">
           <p className="text-2xl font-bold text-gray-900">
             {tournament.startDate} - {tournament.endDate}
           </p>
@@ -139,6 +167,15 @@ export default function TournamentDetail() {
           >
             {tournament.isActive ? "Active" : "Inactive"}
           </span>
+          {tournament.status === TournamentStatus.REGISTRATION && (
+            <button
+              onClick={() => setShowCreateTeam(true)}
+              disabled={updating}
+              className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {updating ? "Creating..." : "Create New Team"}
+            </button>
+          )}
         </div>
       </div>
 
@@ -232,15 +269,74 @@ export default function TournamentDetail() {
                 {team.sport.toUpperCase()}
               </p>
               <button
-                onClick={() => handleJoinTeam(team.id)}
-                className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 text-sm font-medium"
+                // onClick={() => handleJoinTeam(team.id)}
+                disabled={updating}
+                className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Join Team
+                {updating ? "Joining..." : "Join Team"}
               </button>
             </div>
           ))}
         </div>
       </section>
+
+      {/* Create Team Modal */}
+      {showCreateTeam && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-8 max-w-md w-full">
+            <h2 className="text-2xl font-bold mb-6">
+              Create Team for {tournament.name}
+            </h2>
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+            <form onSubmit={handleCreateTeam} className="space-y-4">
+              <input
+                type="text"
+                placeholder="Team Name (e.g. FC Barcelona)"
+                value={newTeam.name}
+                onChange={(e) =>
+                  setNewTeam({ ...newTeam, name: e.target.value })
+                }
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+                required
+                disabled={updating}
+              />
+              <select
+                value={newTeam.sport}
+                onChange={(e) =>
+                  setNewTeam({ ...newTeam, sport: e.target.value })
+                }
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+                disabled={updating}
+              >
+                <option value="football">Football</option>
+                <option value="volleyball">Volleyball</option>
+                <option value="basketball">Basketball</option>
+              </select>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="submit"
+                  disabled={updating}
+                  className="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {updating ? "Creating..." : "Create Team"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowCreateTeam(false)}
+                  disabled={updating}
+                  className="flex-1 bg-gray-200 text-gray-900 py-3 px-4 rounded-lg hover:bg-gray-300 font-medium disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

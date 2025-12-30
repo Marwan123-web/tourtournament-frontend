@@ -30,6 +30,7 @@ export interface Team {
   name: string;
   sport: Sport;
   tournament: Tournament;
+  players: Player[];
 }
 
 export interface TeamStanding {
