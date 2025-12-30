@@ -1,39 +1,48 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Match } from "@/types/api";
 import { MatchStatus } from "@/enums/enums";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { matchesApi, teamsApi } from "@/lib/api";
 
-export default function MatchesPage() {
+export default function TournamentMatchesPage() {
+  const params = useParams();
+  const tournamentId = params.id as string;
+
   const [matches, setMatches] = useState<Match[]>([]);
+  const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+  const [error, setError] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingMatch, setEditingMatch] = useState<Match | null>(null);
   const [newMatch, setNewMatch] = useState({
-    tournamentId: "",
-    homeTeamId: "",
-    awayTeamId: "",
+    tournamentId,
+    team1Id: "",
+    team2Id: "",
     scheduledAt: "",
     round: "",
     status: MatchStatus.SCHEDULED,
   });
-  const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
-  const router = useRouter();
 
   useEffect(() => {
-    fetchMatches();
-    fetchTeams();
-  }, []);
+    if (tournamentId) {
+      fetchTournamentMatches();
+      fetchTeams();
+    }
+  }, [tournamentId]);
 
-  const fetchMatches = async () => {
+  const fetchTournamentMatches = async () => {
     try {
-      const res = await fetch("/api/matches");
-      const data = await res.json();
+      setLoading(true);
+      setError("");
+      const data = await matchesApi.getTournamentMatches(tournamentId);
       setMatches(data);
-    } catch (error) {
-      console.error("Failed to fetch matches");
+    } catch (error: unknown) {
+      console.error("Failed to fetch tournament matches:", error);
+      setError("Failed to load matches. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -41,34 +50,36 @@ export default function MatchesPage() {
 
   const fetchTeams = async () => {
     try {
-      const res = await fetch("/api/teams");
-      const data = await res.json();
+      const data = await teamsApi.getTournamentTeams(tournamentId);
       setTeams(data);
-    } catch (error) {
-      console.error("Failed to fetch teams");
+    } catch (error: unknown) {
+      console.error("Failed to fetch teams:", error);
     }
   };
 
   const handleCreateMatch = async (e: React.FormEvent) => {
     e.preventDefault();
+    setUpdating(true);
+    setError("");
+
     try {
-      await fetch("/api/matches", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newMatch),
-      });
+      await matchesApi.createMatch(newMatch);
       setShowCreateModal(false);
       setNewMatch({
-        tournamentId: "",
-        homeTeamId: "",
-        awayTeamId: "",
+        tournamentId,
+        team1Id: "",
+        team2Id: "",
         scheduledAt: "",
         round: "",
         status: MatchStatus.SCHEDULED,
       });
-      fetchMatches();
-    } catch (error) {
-      console.error("Failed to create match");
+      await fetchTournamentMatches();
+    } catch (error: unknown) {
+      setError(
+        "Failed to create match. Please check your input and try again."
+      );
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -77,41 +88,55 @@ export default function MatchesPage() {
     homeScore: number,
     awayScore: number
   ) => {
+    setUpdating(true);
+    setError("");
+
     try {
-      await fetch(`/api/matches/${matchId}/results`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ homeScore, awayScore }),
-      });
-      fetchMatches();
-    } catch (error) {
-      console.error("Failed to update score");
+      await matchesApi.updateScore(matchId, { homeScore, awayScore });
+      setEditingMatch(null);
+      await fetchTournamentMatches();
+    } catch (error: unknown) {
+      setError("Failed to update score. Please try again.");
+    } finally {
+      setUpdating(false);
     }
   };
 
-  if (loading) return <LoadingSpinner size="xl" message="Loading matches..." />;
+  if (loading)
+    return <LoadingSpinner size="xl" message="Loading tournament matches..." />;
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
+      {error && (
+        <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+          {error}
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-8">
         <div>
           <Link
-            href="/tournaments"
+            href={`/tournaments/${tournamentId}`}
             className="text-indigo-600 hover:text-indigo-500 mb-2 inline-block"
           >
-            ← Back to Tournaments
+            ← Back to Tournament
           </Link>
-          <h1 className="text-4xl font-bold text-gray-900">Matches</h1>
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900">
+              Tournament Matches
+            </h1>
+            <p className="text-gray-500 text-lg">{tournamentId}</p>
+          </div>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700"
+          disabled={updating}
+          className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
         >
-          Create Match
+          {updating ? "Creating..." : "Create Match"}
         </button>
       </div>
 
-      {/* Matches Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {matches.map((match) => (
           <div
@@ -179,9 +204,10 @@ export default function MatchesPage() {
             {match.status === "scheduled" && (
               <button
                 onClick={() => setEditingMatch(match)}
-                className="w-full bg-yellow-600 text-white py-2 px-4 rounded-lg hover:bg-yellow-700 text-sm font-medium"
+                disabled={updating}
+                className="w-full bg-yellow-600 text-white py-2 px-4 rounded-lg hover:bg-yellow-700 text-sm font-medium disabled:opacity-50"
               >
-                Set Result
+                {updating ? "Updating..." : "Set Result"}
               </button>
             )}
           </div>
@@ -193,25 +219,25 @@ export default function MatchesPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-bold mb-6">Create New Match</h2>
+            <div className="mb-6 p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
+              <p className="text-sm font-medium text-indigo-800">
+                Tournament: <span className="font-bold">{tournamentId}</span>
+              </p>
+            </div>
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
             <form onSubmit={handleCreateMatch} className="space-y-4">
               <select
-                value={newMatch.tournamentId}
+                value={newMatch.team1Id}
                 onChange={(e) =>
-                  setNewMatch({ ...newMatch, tournamentId: e.target.value })
+                  setNewMatch({ ...newMatch, team1Id: e.target.value })
                 }
                 className="w-full p-3 border border-gray-300 rounded-lg"
                 required
-              >
-                <option value="">Select Tournament</option>
-                {/* Populate from API */}
-              </select>
-              <select
-                value={newMatch.homeTeamId}
-                onChange={(e) =>
-                  setNewMatch({ ...newMatch, homeTeamId: e.target.value })
-                }
-                className="w-full p-3 border border-gray-300 rounded-lg"
-                required
+                disabled={updating}
               >
                 <option value="">Home Team</option>
                 {teams.map((team) => (
@@ -221,12 +247,13 @@ export default function MatchesPage() {
                 ))}
               </select>
               <select
-                value={newMatch.awayTeamId}
+                value={newMatch.team2Id}
                 onChange={(e) =>
-                  setNewMatch({ ...newMatch, awayTeamId: e.target.value })
+                  setNewMatch({ ...newMatch, team2Id: e.target.value })
                 }
                 className="w-full p-3 border border-gray-300 rounded-lg"
                 required
+                disabled={updating}
               >
                 <option value="">Away Team</option>
                 {teams.map((team) => (
@@ -235,7 +262,7 @@ export default function MatchesPage() {
                   </option>
                 ))}
               </select>
-              <input
+              {/* <input
                 type="datetime-local"
                 value={newMatch.scheduledAt}
                 onChange={(e) =>
@@ -243,6 +270,7 @@ export default function MatchesPage() {
                 }
                 className="w-full p-3 border border-gray-300 rounded-lg"
                 required
+                disabled={updating}
               />
               <input
                 type="text"
@@ -253,18 +281,21 @@ export default function MatchesPage() {
                 }
                 className="w-full p-3 border border-gray-300 rounded-lg"
                 required
-              />
+                disabled={updating}
+              /> */}
               <div className="flex gap-3 pt-4">
                 <button
                   type="submit"
-                  className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700"
+                  disabled={updating}
+                  className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
                 >
-                  Create Match
+                  {updating ? "Creating..." : "Create Match"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 bg-gray-200 text-gray-900 py-2 px-4 rounded-lg hover:bg-gray-300"
+                  disabled={updating}
+                  className="flex-1 bg-gray-200 text-gray-900 py-2 px-4 rounded-lg hover:bg-gray-300 disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -281,6 +312,11 @@ export default function MatchesPage() {
             <h2 className="text-2xl font-bold mb-6">
               {editingMatch.homeTeam.name} vs {editingMatch.awayTeam.name}
             </h2>
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
             <div className="flex items-center justify-center space-x-8 mb-8">
               <div className="text-center">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -289,9 +325,10 @@ export default function MatchesPage() {
                 <input
                   type="number"
                   min="0"
-                  className="w-20 p-3 border border-gray-300 rounded-lg text-center text-2xl font-bold"
                   defaultValue={editingMatch.homeScore ?? ""}
                   id="homeScore"
+                  disabled={updating}
+                  className="w-20 p-3 border border-gray-300 rounded-lg text-center text-2xl font-bold disabled:opacity-50"
                 />
               </div>
               <span className="text-2xl font-bold text-gray-400">VS</span>
@@ -302,9 +339,10 @@ export default function MatchesPage() {
                 <input
                   type="number"
                   min="0"
-                  className="w-20 p-3 border border-gray-300 rounded-lg text-center text-2xl font-bold"
                   defaultValue={editingMatch.awayScore ?? ""}
                   id="awayScore"
+                  disabled={updating}
+                  className="w-20 p-3 border border-gray-300 rounded-lg text-center text-2xl font-bold disabled:opacity-50"
                 />
               </div>
             </div>
@@ -319,13 +357,15 @@ export default function MatchesPage() {
                   ).valueAsNumber;
                   handleUpdateScore(editingMatch.id, homeScore, awayScore);
                 }}
-                className="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 font-medium"
+                disabled={updating}
+                className="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 font-medium disabled:opacity-50"
               >
-                Save Result
+                {updating ? "Saving..." : "Save Result"}
               </button>
               <button
                 onClick={() => setEditingMatch(null)}
-                className="flex-1 bg-gray-200 text-gray-900 py-3 px-4 rounded-lg hover:bg-gray-300 font-medium"
+                disabled={updating}
+                className="flex-1 bg-gray-200 text-gray-900 py-3 px-4 rounded-lg hover:bg-gray-300 font-medium disabled:opacity-50"
               >
                 Cancel
               </button>

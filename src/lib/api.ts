@@ -8,6 +8,7 @@ import type {
   ApiError,
   Field,
   Booking,
+  Match,
 } from "@/types/api";
 import { toast } from "react-toastify";
 import { Sport } from "@/enums/enums";
@@ -117,4 +118,37 @@ export const bookingsApi = {
   }) => api.post<Booking>("/api/bookings", data).then((res) => res.data),
 };
 
+export const matchesApi = {
+  getMatches: () => api.get<Match[]>("/api/matches").then((res) => res.data),
+
+  // ✅ ADD THIS NEW METHOD:
+  getTournamentMatches: (tournamentId: string) =>
+    api
+      .get<Match[]>(`/api/matches/tournament/${tournamentId}`)
+      .then((res) => res.data),
+
+  createMatch: (data: {
+    tournamentId: string;
+    team1Id: string;
+    team2Id: string;
+    scheduledAt: string;
+    round: string;
+    status: string;
+  }) => api.post<Match>("/api/matches", data).then((res) => res.data),
+
+  updateScore: (
+    matchId: string,
+    data: { homeScore: number; awayScore: number }
+  ) =>
+    api
+      .patch<Match>(`/api/matches/${matchId}/results`, data)
+      .then((res) => res.data),
+};
+
+export const teamsApi = {
+  getTournamentTeams: (tournamentId: string) =>
+    api
+      .get<Team[]>(`/api/teams/tournament/${tournamentId}`)
+      .then((res) => res.data),
+};
 export default api;

@@ -1,9 +1,4 @@
-import {
-  BookingStatus,
-  MatchStatus,
-  Sport,
-  TournamentStatus,
-} from "@/enums/enums";
+import { MatchStatus, Sport, TournamentStatus } from "@/enums/enums";
 
 export interface CreateTournamentDto {
   name: string;
