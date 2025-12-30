@@ -1,62 +1,98 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import type { User, Tournament } from "@/types/api";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { authApi, tournamentApi, getErrorMessage } from "@/lib/api";
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [editMode, setEditMode] = useState(false);
+  const [updating, setUpdating] = useState(false);
   const [formData, setFormData] = useState({ username: "", email: "" });
   const router = useRouter();
 
-  // ✅ Function declared BEFORE useEffect
   const fetchProfile = async () => {
-    try {
-      const res = await fetch("/api/profile");
-      if (!res.ok) throw new Error("Failed to fetch");
-      const data = await res.json();
+    setLoading(true);
+    setError("");
 
-      setUser(data.user);
+    try {
+      const [userData, userTournaments] = await Promise.all([
+        authApi.whoami(),
+        tournamentApi.getTournaments(),
+      ]);
+
+      setUser(userData);
       setFormData({
-        username: data.user.username || "",
-        email: data.user.email,
+        username: userData.username || "",
+        email: userData.email || "",
       });
-      setTournaments(data.tournaments || []);
-    } catch (error) {
+      setTournaments(
+        userTournaments.filter((t) => t.creator.id === userData.id)
+      );
+    } catch (error: unknown) {
       console.error("Failed to fetch profile:", error);
+      setError(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Safe useEffect - no cascading renders
   useEffect(() => {
     fetchProfile();
   }, []);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const res = await fetch("/api/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+    setUpdating(true);
+    setError("");
 
-      if (res.ok) {
-        setEditMode(false);
-        fetchProfile();
-      }
-    } catch (error) {
+    try {
+      await authApi.updateProfile(formData);
+      setEditMode(false);
+      fetchProfile();
+    } catch (error: unknown) {
       console.error("Failed to update profile:", error);
+      setError(getErrorMessage(error));
+    } finally {
+      setUpdating(false);
     }
   };
 
-  // ✅ Loading state prevents render issues
-  if (loading) return <LoadingSpinner size="xl" message="Loading profile..." />;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <LoadingSpinner size="xl" message="Loading your profile..." />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center max-w-2xl mx-auto">
+            <h2 className="text-2xl font-bold text-red-800 mb-4">
+              Failed to load profile
+            </h2>
+            <p className="text-red-700 mb-6">{error}</p>
+            <button
+              onClick={fetchProfile}
+              className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 flex items-center justify-center gap-2 mx-auto"
+            >
+              <LoadingSpinner size="sm" />
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -89,9 +125,10 @@ export default function ProfilePage() {
             </h2>
             <button
               onClick={() => setEditMode(!editMode)}
-              className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+              disabled={updating}
+              className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium disabled:opacity-50"
             >
-              {editMode ? "Cancel" : "Edit Profile"}
+              {updating ? "Updating..." : editMode ? "Cancel" : "Edit Profile"}
             </button>
           </div>
 
@@ -107,8 +144,9 @@ export default function ProfilePage() {
                   onChange={(e) =>
                     setFormData({ ...formData, username: e.target.value })
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all disabled:opacity-50"
                   placeholder="Enter username"
+                  disabled={updating}
                 />
               </div>
               <div>
@@ -121,15 +159,23 @@ export default function ProfilePage() {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all disabled:opacity-50"
                   placeholder="Enter email"
+                  disabled={updating}
                 />
               </div>
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                  <p className="text-sm text-red-800">{error}</p>
+                </div>
+              )}
               <button
                 type="submit"
-                className="w-full bg-indigo-600 text-white py-3 px-6 rounded-lg hover:bg-indigo-700 font-semibold transition-colors"
+                disabled={updating}
+                className="w-full bg-indigo-600 text-white py-3 px-6 rounded-lg hover:bg-indigo-700 font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                Save Changes
+                {updating && <LoadingSpinner size="sm" />}
+                {updating ? "Updating..." : "Save Changes"}
               </button>
             </form>
           ) : (
@@ -164,12 +210,12 @@ export default function ProfilePage() {
               <p className="text-gray-500 text-lg">
                 No tournaments created yet
               </p>
-              <a
+              <Link
                 href="/tournaments"
                 className="mt-4 inline-block bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700"
               >
                 Create First Tournament
-              </a>
+              </Link>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

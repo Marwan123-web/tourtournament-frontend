@@ -5,7 +5,6 @@ import {
   TournamentStatus,
 } from "@/enums/enums";
 
-// Backend DTOs + Responses (Exact types)
 export interface CreateTournamentDto {
   name: string;
   sport: Sport;
@@ -78,21 +77,25 @@ export interface Field {
   name: string;
   sport: Sport;
   capacity: number;
-  location: string;
+  address: string;
   pricePerHour: number;
   isAvailable: boolean;
 }
 
 export interface Booking {
   id: string;
-  fieldId: string;
-  field: Field;
-  userId: number;
+  date: string;
   startTime: string;
   endTime: string;
+  totalPrice: string;
+  fieldId?: string;
+  field: Field;
+  userId?: number;
+  user: User;
+  status?: string;
   tournamentId?: string;
-  status: BookingStatus;
   createdAt: string;
+  isActive: boolean;
 }
 
 export interface Match {

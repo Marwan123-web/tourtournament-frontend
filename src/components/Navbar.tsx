@@ -39,9 +39,11 @@ export default function Navbar() {
                   Create
                 </Button>
               </Link>
-              <span className="text-sm text-muted-foreground hidden md:inline">
-                Hi, {user.email}
-              </span>
+              <Link href="/profile">
+                <span className="text-sm text-muted-foreground hidden md:inline">
+                  Hi, {user.name}
+                </span>
+              </Link>
               <Button onClick={logout} variant="outline" size="sm">
                 <User className="mr-2 h-4 w-4" />
                 Logout

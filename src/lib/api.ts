@@ -6,8 +6,11 @@ import type {
   TeamStanding,
   User,
   ApiError,
+  Field,
+  Booking,
 } from "@/types/api";
 import { toast } from "react-toastify";
+import { Sport } from "@/enums/enums";
 
 const api = axios.create({
   baseURL: "http://localhost:4000",
@@ -16,7 +19,6 @@ const api = axios.create({
   },
 });
 
-// Add JWT token to all requests
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -25,7 +27,6 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// ✅ Global error handler - NO 'any' types!
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError<ApiError>) => {
@@ -89,6 +90,31 @@ export const authApi = {
       .then((res) => res.data),
 
   whoami: () => api.get<User>("/api/auth/whoami").then((res) => res.data),
+  updateProfile: (data: { username: string; email: string }) =>
+    api.put<User>("/api/auth/update", data).then((res) => res.data),
+};
+
+export const fieldsApi = {
+  getFields: () => api.get<Field[]>("/api/fields").then((res) => res.data),
+
+  createField: (data: {
+    name: string;
+    sport: Sport;
+    capacity: number;
+    address: string;
+    pricePerHour: number;
+  }) => api.post<Field>("/api/fields", data).then((res) => res.data),
+};
+
+export const bookingsApi = {
+  getBookings: () =>
+    api.get<Booking[]>("/api/bookings").then((res) => res.data),
+
+  createBooking: (data: {
+    fieldId: string;
+    startTime: string;
+    endTime: string;
+  }) => api.post<Booking>("/api/bookings", data).then((res) => res.data),
 };
 
 export default api;
