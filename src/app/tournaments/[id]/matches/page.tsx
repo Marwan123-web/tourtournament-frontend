@@ -2,17 +2,17 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Match } from "@/types/api";
+import { Match, Team } from "@/types/api";
 import { MatchStatus } from "@/enums/enums";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
-import { matchesApi, teamsApi } from "@/lib/api";
+import { getErrorMessage, matchesApi, teamsApi } from "@/lib/api";
 
 export default function TournamentMatchesPage() {
   const params = useParams();
   const tournamentId = params.id as string;
 
   const [matches, setMatches] = useState<Match[]>([]);
-  const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
@@ -76,7 +76,7 @@ export default function TournamentMatchesPage() {
       await fetchTournamentMatches();
     } catch (error: unknown) {
       setError(
-        "Failed to create match. Please check your input and try again."
+        getErrorMessage(error)
       );
     } finally {
       setUpdating(false);
@@ -221,7 +221,7 @@ export default function TournamentMatchesPage() {
             <h2 className="text-2xl font-bold mb-6">Create New Match</h2>
             <div className="mb-6 p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
               <p className="text-sm font-medium text-indigo-800">
-                Tournament: <span className="font-bold">{tournamentId}</span>
+                Tournament: <span className="font-bold">{teams[0]?.tournament?.name}</span>
               </p>
             </div>
             {error && (

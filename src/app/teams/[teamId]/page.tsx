@@ -91,10 +91,10 @@ export default function TeamDetail() {
       <div className="p-8 text-center">
         <div className="text-gray-500 mb-4">Team not found</div>
         <Link
-          href={`/tournaments/${params.tournamentId}/teams`}
+          href={`/tournaments`}
           className="text-indigo-600 hover:underline"
         >
-          ← Back to Teams
+          ← Back to Tournaments
         </Link>
       </div>
     );
@@ -112,7 +112,7 @@ export default function TeamDetail() {
       <div className="flex justify-between items-start mb-8">
         <div>
           <Link
-            href={`/tournaments/${params.tournamentId}/teams`}
+            href={`/tournaments/${team.tournament.id}/teams`}
             className="text-indigo-600 hover:text-indigo-500 mb-4 inline-block"
           >
             ← Back to Teams

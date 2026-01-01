@@ -181,7 +181,15 @@ export default function TournamentDetail() {
 
       {/* Standings Table */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-6">Standings</h2>
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold mb-6">Standings</h2>
+          <Link
+            href={`/tournaments/${tournament.id}/matches`}
+            className="text-indigo-600 hover:underline"
+          >
+            Go to Matches -
+          </Link>
+        </div>
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white border border-gray-200 rounded-xl shadow-sm">
             <thead>
@@ -268,13 +276,19 @@ export default function TournamentDetail() {
               <p className="text-sm text-gray-500 mb-4">
                 {team.sport.toUpperCase()}
               </p>
-              <button
-                // onClick={() => handleJoinTeam(team.id)}
+              {/* <button
+                onClick={() => handleJoinTeam(team.id)}
                 disabled={updating}
                 className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {updating ? "Joining..." : "Join Team"}
-              </button>
+              </button> */}
+              <Link
+                href={`/teams/${team.id}`}
+                className="flex justify-center w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Team Details
+              </Link>
             </div>
           ))}
         </div>
