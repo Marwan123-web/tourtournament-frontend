@@ -12,13 +12,14 @@ const protectedRoutes = [
 export function middleware(request: NextRequest) {
   const token = request.cookies.get("auth-token")?.value;
   const role = request.cookies.get("user-role")?.value;
+  console.log("role", role);
 
   // ✅ Admin protection FIRST (performance + security)
   if (
     adminRoutes.some((route) => request.nextUrl.pathname.startsWith(route)) &&
     role !== "admin"
   ) {
-    return NextResponse.redirect(new URL("/profile", request.url));
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   // ✅ Protected routes (requires auth token)
