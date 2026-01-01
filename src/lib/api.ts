@@ -175,4 +175,12 @@ export const playersApi = {
   deletePlayer: (teamId: string, playerId: string) =>
     api.delete(`/api/players/${playerId}`).then((res) => res.data),
 };
+
+export const adminApi = {
+  getUsers: (q: string) =>
+    api.get<User[]>("/api/users", { params: { q } }).then((res) => res.data),
+
+  updateUser: (id: number, data: Partial<User>) =>
+    api.put<User>(`/api/users/${id}`, data).then((res) => res.data),
+};
 export default api;

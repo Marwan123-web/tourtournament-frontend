@@ -54,7 +54,7 @@ export interface User {
   username?: string;
   name: string;
   surname: string;
-  role: string;
+  role: SystemRoles;
   createdAt: string;
   updatedAt: string;
   isActive: boolean;
@@ -115,4 +115,9 @@ export interface ApiError {
   };
   timestamp: string;
   path: string;
+}
+
+export enum SystemRoles {
+  ADMIN = "admin",
+  USER = "user",
 }
