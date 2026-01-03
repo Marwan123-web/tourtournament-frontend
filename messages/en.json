@@ -10,7 +10,7 @@
   "navbar": {
     "tournaments": "Tournaments",
     "fields": "Fields",
-    "welcome": "Hi, {{name}}",
+    "welcome": "Hi, {name}",
     "login": "Log In",
     "logout": "Logout",
     "user": "User"
@@ -128,7 +128,7 @@
     "username": "Username",
     "email": "Email",
     "notSet": "Not set",
-    "tournamentsTitle": "My Tournaments ({{count}})",
+    "tournamentsTitle": "My Tournaments ({count})",
     "createTournament": "Create Tournament",
     "noTournaments": "No tournaments created yet",
     "createFirst": "Create First Tournament",
@@ -147,7 +147,7 @@
       "backToTeams": "Back to Teams",
       "addPlayer": "Add Player",
       "adding": "Adding...",
-      "rosterTitle": "Roster ({{count}} players)",
+      "rosterTitle": "Roster ({count} players)",
       "jersey": "#",
       "name": "Name",
       "position": "Position",
@@ -191,12 +191,12 @@
         "pts": "Pts"
       },
       "viewMatches": "Go to Matches →",
-      "teamsTitle": "{{current}}/{{max}} Teams",
+      "teamsTitle": "{current}/{max} Teams",
       "teamDetails": "Team Details",
       "createTeam": "Create Team",
       "creating": "Creating...",
       "createModal": {
-        "title": "Create Team for {{tournament}}",
+        "title": "Create Team for {tournament}",
         "name": "Team Name",
         "sport": "Sport"
       },
@@ -210,8 +210,8 @@
       "loading": "Loading tournaments...",
       "title": "Tournaments",
       "createButton": "Create Tournament",
-      "starts": "Starts: {{date}}",
-      "teamCount": "{{current}}/{{max}} teams",
+      "starts": "Starts: {date}",
+      "teamCount": "{current}/{max} teams",
       "viewDetails": "View Details",
       "modal": {
         "title": "Create New Tournament",
@@ -257,7 +257,7 @@
       "players": "players",
       "createTeam": "Create Team",
       "creating": "Creating...",
-      "teamsTitle": "Teams ({{count}})",
+      "teamsTitle": "Teams ({count})",
       "viewTeam": "View Team →",
       "createModal": {
         "title": "Create New Team",
