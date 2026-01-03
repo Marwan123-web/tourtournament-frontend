@@ -1,4 +1,6 @@
 @import "tailwindcss";
+
+/* Custom theme vars */
 @theme {
   --color-primary: 222.2 47.4% 11.2%;
   --color-primary-foreground: 210 40% 98%;
@@ -15,11 +17,11 @@
   --color-ring: 222.2 84% 4.9%;
 }
 
-@layer base {
-  :root {
-    color-scheme: light;
-  }
-  .dark {
-    color-scheme: dark;
-  }
+/* Fonts */
+html {
+  font-family: Inter, Cairo, ui-sans-serif, system-ui, sans-serif;
+}
+
+[dir="rtl"] {
+  font-family: Cairo, Inter, ui-sans-serif, sans-serif;
 }

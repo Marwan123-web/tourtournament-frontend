@@ -121,3 +121,10 @@ export enum SystemRoles {
   ADMIN = "admin",
   USER = "user",
 }
+
+export interface NextIntlRequestConfig {
+  messages: Record<string, string | Record<string, unknown>>;
+  locale: string;
+  timeZone?: string;
+  now?: Date;
+}

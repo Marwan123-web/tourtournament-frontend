@@ -1,0 +1,40 @@
+{
+  "home": {
+    "title": "Tournament Management Platform",
+    "description": "Organize professional tournaments, manage teams, book fields, and track matches in real-time.",
+    "cta": {
+      "browse": "Browse Tournaments",
+      "bookField": "Book Field"
+    }
+  },
+  "navbar": {
+    "tournaments": "Tournaments",
+    "fields": "Fields",
+    "welcome": "Hi, {{name}}",
+    "login": "Log In",
+    "logout": "Logout",
+    "user": "User"
+  },
+  "common": {
+    "error": {
+      "default": "Something went wrong. Please try again."
+    },
+    "search": {
+      "placeholder": "Search by name, email..."
+    },
+    "noData": "No data found matching your criteria"
+  },
+  "form": {
+    "name": "Name",
+    "surname": "Surname",
+    "email": "Email",
+    "username": "Username",
+    "password": "Password",
+    "role": "Role"
+  },
+  "pages": {
+    "adminUsers": {
+      "title": "User Management"
+    }
+  }
+}

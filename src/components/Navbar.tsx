@@ -1,22 +1,25 @@
-"use client"; // ✅ REQUIRED for useAuth hook!
-
+"use client";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { LogIn, User, Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function Navbar() {
-  const { user, logout, loading } = useAuth(); // ✅ Now works!
+  const t = useTranslations("navbar");
+  const { user, logout } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
 
-  if (loading) {
-    return (
-      <nav className="border-b bg-background/95 backdrop-blur h-16">
-        <div className="container mx-auto flex items-center justify-center h-full">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-        </div>
-      </nav>
-    );
-  }
+  const navItems = [
+    { href: "/tournaments", label: t("tournaments") },
+    { href: "/fields", label: t("fields") },
+  ];
+
+  const handleLogout = () => {
+    logout();
+    router.push("/");
+  };
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
@@ -25,36 +28,41 @@ export default function Navbar() {
           href="/"
           className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
         >
-          🏆 Tournaments
+          Tournaments
         </Link>
+
         <div className="flex items-center space-x-4">
-          <Link href="/tournaments">
-            <Button variant="ghost">Browse</Button>
-          </Link>
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`hover:text-primary transition-colors ${
+                pathname === item.href ? "text-primary font-semibold" : ""
+              }`}
+            >
+              {item.label}
+            </Link>
+          ))}
+
           {user ? (
             <>
-              <Link href="/tournaments">
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create
-                </Button>
-              </Link>
-              <Link href="/profile">
+              <Link
+                href="/profile"
+                className="hover:text-primary transition-colors"
+              >
                 <span className="text-sm text-muted-foreground hidden md:inline">
-                  Hi, {user.name}
+                  {t("welcome", {
+                    name: user.name || user.username || t("user"),
+                  })}
                 </span>
               </Link>
-              <Button onClick={logout} variant="outline" size="sm">
-                <User className="mr-2 h-4 w-4" />
-                Logout
+              <Button onClick={handleLogout} variant="outline" size="sm">
+                {t("logout")}
               </Button>
             </>
           ) : (
             <Link href="/auth/login">
-              <Button>
-                <LogIn className="mr-2 h-4 w-4" />
-                Login
-              </Button>
+              <Button>{t("login")}</Button>
             </Link>
           )}
         </div>
