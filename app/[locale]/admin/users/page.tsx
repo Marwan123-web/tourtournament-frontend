@@ -2,9 +2,20 @@
 import { useState, useEffect } from "react";
 import type { User } from "@/types/api";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { ErrorBanner } from "@/components/ErrorBanner";
+import { DataTable } from "@/components/DataTable";
+import { CreateEditModal } from "@/components/CreateEditModal";
+import { ActionButtons } from "@/components/ActionButtons";
+import { SearchInput } from "@/components/SearchInput";
+import { StatusBadge } from "@/components/StatusBadge";
+import { FormInput } from "@/components/FormInput";
+import { Modal } from "@/components/Modal";
 import { adminApi, getErrorMessage } from "@/lib/api";
+import { useTranslations } from "next-intl";
 
 export default function AdminUsers() {
+  const t = useTranslations("adminUsers"); // Assuming translation namespace
+
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -103,288 +114,174 @@ export default function AdminUsers() {
     setConfirmSuspendUser(null);
   };
 
-  const filteredUsers = users.filter(
-    (user) =>
-      user?.email?.toLowerCase().includes(search.toLowerCase()) ||
-      user?.username?.toLowerCase().includes(search.toLowerCase()) ||
-      user?.name?.toLowerCase().includes(search.toLowerCase()) ||
-      user?.surname?.toLowerCase().includes(search.toLowerCase())
+  const columns = [
+    {
+      key: "id" as keyof User,
+      label: t("columns.id"),
+      render: (user: User) => `#${user.id}`,
+    },
+    {
+      key: "name" as keyof User,
+      label: t("columns.name"),
+      render: (user: User) => (
+        <span className="font-medium">
+          {`${user.name || "-"} ${user.surname || ""}`.trim() || "-"}
+        </span>
+      ),
+    },
+    {
+      key: "email" as keyof User,
+      label: t("columns.email"),
+    },
+    {
+      key: "username" as keyof User,
+      label: t("columns.username"),
+      render: (user: User) => user.username || "-",
+    },
+    {
+      key: "role" as keyof User,
+      label: t("columns.role"),
+      render: (user: User) => <StatusBadge status={user.role || "user"} />,
+    },
+    {
+      key: "tournamentsCreated" as keyof User,
+      label: t("columns.tournaments"),
+      render: () => "5", // Static value from original
+    },
+  ];
+
+  const userActions = (user: User) => (
+    <ActionButtons
+      onEdit={() => openEdit(user)}
+      onDelete={user.isActive ? () => setConfirmSuspendUser(user) : undefined}
+      onActivate={
+        !user.isActive ? () => handleToggleActive(user, true) : undefined
+      }
+      updating={updating}
+    />
   );
 
   if (loading) {
-    return <LoadingSpinner size="xl" message="Loading users..." />;
+    return <LoadingSpinner size="xl" message={t("loading")} />;
   }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      {/* Error banner */}
-      {error && (
-        <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-          {error}
-        </div>
-      )}
-
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-900">User Management</h1>
+    <div className="p-8 max-w-7xl mx-auto space-y-8">
+      <div className="flex justify-between items-center">
+        <h1 className="text-4xl font-bold text-gray-900">{t("title")}</h1>
       </div>
 
-      {/* Search */}
-      <div className="mb-8">
-        <input
-          type="text"
-          placeholder="Search by email, username, name, surname..."
-          defaultValue={search}
-          onBlur={(e) => setSearch(e.target.value)}
-          className="w-full max-w-md px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-        />
-      </div>
+      <ErrorBanner error={error} />
 
-      {/* Users Table */}
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
-                  ID
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Username
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tournaments Created
-                </th>
-                <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
-                    #{user.id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {(user.name || "-") + " " + (user.surname || "")}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {user.email}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {user.username || "-"}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-3 py-1 bg-indigo-100 text-indigo-800 text-xs font-medium rounded-full capitalize">
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    5
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      disabled={updating}
-                      onClick={() => openEdit(user)}
-                      className="text-indigo-600 hover:text-indigo-900 mr-3 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Edit
-                    </button>
+      <SearchInput
+        value={search}
+        onChange={setSearch}
+        placeholder={t("searchPlaceholder")}
+      />
 
-                    {user.isActive ? (
-                      <button
-                        disabled={updating}
-                        onClick={() => setConfirmSuspendUser(user)}
-                        className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Suspend
-                      </button>
-                    ) : (
-                      <button
-                        disabled={updating}
-                        onClick={() => handleToggleActive(user, true)}
-                        className="text-green-600 hover:text-green-900 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Activate
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
+      <DataTable
+        data={users} // Now only server-filtered data
+        columns={columns}
+        actions={userActions}
+      />
 
-              {filteredUsers.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={7}
-                    className="px-6 py-8 text-center text-sm text-gray-500"
-                  >
-                    No users match your search.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Edit User Modal */}
       {editingUser && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <h2 className="text-2xl font-bold mb-4">
-              Edit User #{editingUser.id}
-            </h2>
-
-            {error && (
-              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
-
-            <form onSubmit={handleUpdateUser} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    value={editForm.name}
-                    onChange={(e) =>
-                      setEditForm((f) => ({ ...f, name: e.target.value }))
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                    disabled={updating}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Surname
-                  </label>
-                  <input
-                    type="text"
-                    value={editForm.surname}
-                    onChange={(e) =>
-                      setEditForm((f) => ({ ...f, surname: e.target.value }))
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                    disabled={updating}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={editForm.email}
-                  onChange={(e) =>
-                    setEditForm((f) => ({ ...f, email: e.target.value }))
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                  required
-                  disabled={updating}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Username
-                </label>
-                <input
-                  type="text"
-                  value={editForm.username}
-                  onChange={(e) =>
-                    setEditForm((f) => ({ ...f, username: e.target.value }))
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                  disabled={updating}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Role
-                </label>
-                <select
-                  value={editForm.role}
-                  onChange={(e) =>
-                    setEditForm((f) => ({
-                      ...f,
-                      role: e.target.value as User["role"],
-                    }))
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                  disabled={updating}
-                >
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="submit"
-                  disabled={updating}
-                  className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
-                >
-                  {updating ? "Saving..." : "Save"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setEditingUser(null)}
-                  disabled={updating}
-                  className="flex-1 bg-gray-200 text-gray-900 py-2 px-4 rounded-lg hover:bg-gray-300 disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
+        <CreateEditModal
+          isOpen={!!editingUser}
+          onClose={() => setEditingUser(null)}
+          title={`${t("editModal.title")} #${editingUser.id}`}
+          onSubmit={handleUpdateUser}
+          updating={updating}
+        >
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <FormInput
+              label={t("editModal.name")}
+              id="name"
+              value={editForm.name}
+              onChange={(e) =>
+                setEditForm((f) => ({ ...f, name: e.target.value }))
+              }
+              disabled={updating}
+            />
+            <FormInput
+              label={t("editModal.surname")}
+              id="surname"
+              value={editForm.surname}
+              onChange={(e) =>
+                setEditForm((f) => ({ ...f, surname: e.target.value }))
+              }
+              disabled={updating}
+            />
           </div>
-        </div>
+
+          <FormInput
+            label={t("editModal.email")}
+            id="email"
+            type="email"
+            value={editForm.email}
+            onChange={(e) =>
+              setEditForm((f) => ({ ...f, email: e.target.value }))
+            }
+            required
+            disabled={updating}
+          />
+
+          <FormInput
+            label={t("editModal.username")}
+            id="username"
+            value={editForm.username}
+            onChange={(e) =>
+              setEditForm((f) => ({ ...f, username: e.target.value }))
+            }
+            disabled={updating}
+          />
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t("editModal.role")}
+            </label>
+            <select
+              value={editForm.role}
+              onChange={(e) =>
+                setEditForm((f) => ({
+                  ...f,
+                  role: e.target.value as User["role"],
+                }))
+              }
+              disabled={updating}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
+            >
+              <option value="user">{t("roles.user")}</option>
+              <option value="admin">{t("roles.admin")}</option>
+            </select>
+          </div>
+        </CreateEditModal>
       )}
 
-      {/* Suspend confirmation modal */}
       {confirmSuspendUser && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-sm">
-            <h2 className="text-xl font-bold mb-4 text-red-700">
-              Suspend user?
-            </h2>
+        <Modal
+          isOpen={!!confirmSuspendUser}
+          onClose={() => setConfirmSuspendUser(null)}
+          title={t("suspendModal.title")}
+          maxWidth="sm"
+        >
+          <div className="text-center">
             <p className="text-sm text-gray-700 mb-6">
-              Are you sure you want to suspend{" "}
-              <span className="font-semibold">
-                {confirmSuspendUser.email ??
-                  confirmSuspendUser.username ??
-                  "this user"}
-              </span>
-              ? They will not be able to access their account.
+              {t("suspendModal.message", {
+                user:
+                  confirmSuspendUser.email ||
+                  confirmSuspendUser.username ||
+                  t("user"),
+              })}
             </p>
-            <div className="flex justify-end gap-3">
+            <div className="flex justify-end gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setConfirmSuspendUser(null)}
                 disabled={updating}
                 className="px-4 py-2 rounded-lg bg-gray-200 text-gray-900 hover:bg-gray-300 disabled:opacity-50"
               >
-                Cancel
+                {t("cancel")}
               </button>
               <button
                 type="button"
@@ -392,11 +289,11 @@ export default function AdminUsers() {
                 disabled={updating}
                 className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
               >
-                {updating ? "Suspending..." : "Confirm"}
+                {updating ? t("suspending") : t("confirm")}
               </button>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

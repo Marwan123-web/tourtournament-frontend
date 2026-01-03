@@ -1,6 +1,6 @@
+// DataTable.tsx - Updated to use parent-controlled search (no internal filtering)
 "use client";
-import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { StatusBadge } from "./StatusBadge";
 
 interface Column<T> {
   key: keyof T;
@@ -11,42 +11,12 @@ interface Column<T> {
 interface DataTableProps<T> {
   data: T[];
   columns: Column<T>[];
-  searchKeys?: (keyof T)[];
-  className?: string;
+  actions?: (item: T) => React.ReactNode;
 }
 
-export function DataTable<T>({
-  data,
-  columns,
-  searchKeys = [],
-  className = "",
-}: DataTableProps<T>) {
-  const t = useTranslations("common");
-  const [search, setSearch] = useState("");
-
-  const filteredData = data.filter((item) =>
-    searchKeys.some((key) =>
-      String(item[key] || "")
-        .toLowerCase()
-        .includes(search.toLowerCase())
-    )
-  );
-
+export function DataTable<T>({ data, columns, actions }: DataTableProps<T>) {
   return (
-    <div
-      className={`bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden ${className}`}
-    >
-      {searchKeys.length > 0 && (
-        <div className="mb-8">
-          <input
-            type="text"
-            placeholder={t("search.placeholder")}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full max-w-md px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          />
-        </div>
-      )}
+    <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -59,28 +29,40 @@ export function DataTable<T>({
                   {col.label}
                 </th>
               ))}
+              {actions && (
+                <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                  Actions
+                </th>
+              )}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredData.map((item, idx) => (
+            {data.map((item, idx) => (
               <tr key={idx} className="hover:bg-gray-50">
                 {columns.map((col) => (
                   <td
                     key={String(col.key)}
                     className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
                   >
-                    {col.render ? col.render(item) : String(item[col.key])}
+                    {col.render
+                      ? col.render(item)
+                      : String(item[col.key] || "")}
                   </td>
                 ))}
+                {actions && (
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    {actions(item)}
+                  </td>
+                )}
               </tr>
             ))}
-            {filteredData.length === 0 && (
+            {data.length === 0 && (
               <tr>
                 <td
-                  colSpan={columns.length}
+                  colSpan={columns.length + (actions ? 1 : 0)}
                   className="px-6 py-8 text-center text-sm text-gray-500"
                 >
-                  {t("noData")}
+                  No results found.
                 </td>
               </tr>
             )}

@@ -32,9 +32,247 @@
     "password": "Password",
     "role": "Role"
   },
-  "pages": {
-    "adminUsers": {
-      "title": "User Management"
+  "adminUsers": {
+    "title": "User Management",
+    "loading": "Loading users...",
+    "searchPlaceholder": "Search by email, username, name, surname...",
+    "columns": {
+      "id": "ID",
+      "name": "Name",
+      "email": "Email",
+      "username": "Username",
+      "role": "Role",
+      "tournaments": "Tournaments Created"
+    },
+    "editModal": {
+      "title": "Edit User",
+      "name": "Name",
+      "surname": "Surname",
+      "email": "Email",
+      "username": "Username",
+      "role": "Role"
+    },
+    "roles": {
+      "user": "User",
+      "admin": "Admin"
+    },
+    "suspendModal": {
+      "title": "Suspend user?",
+      "message": "Are you sure you want to suspend {user}? They will not be able to access their account.",
+      "user": "this user"
+    },
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "suspending": "Suspending..."
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in to your account",
+      "email": "Email address",
+      "password": "Password",
+      "submit": "Sign in",
+      "submitting": "Signing in...",
+      "registerLink": "Don't have an account? Register"
+    },
+    "register": {
+      "title": "Create your account",
+      "name": "Full name",
+      "email": "Email address",
+      "password": "Password",
+      "submit": "Create account",
+      "submitting": "Creating account...",
+      "loginLink": "Already have an account? Sign in"
+    }
+  },
+  "fields": {
+    "title": "Fields & Bookings",
+    "backToTournaments": "Back to Tournaments",
+    "addField": "Add Field",
+    "creating": "Creating...",
+    "availableFields": "Available Fields",
+    "players": "players",
+    "perHour": "hr",
+    "bookNow": "Book Now (2hr slot)",
+    "booking": "Booking...",
+    "createModal": {
+      "title": "Add New Field",
+      "name": "Field Name",
+      "sport": "Sport",
+      "capacity": "Capacity",
+      "address": "Address",
+      "price": "Price per hour ($)"
+    },
+    "createField": "Create Field",
+    "sports": {
+      "football": "Football",
+      "volleyball": "Volleyball",
+      "basketball": "Basketball"
+    },
+    "confirmBooking": "Confirm booking?",
+    "errors": {
+      "fields": "Failed to load fields. Please try again.",
+      "bookings": "Failed to load bookings. Please try again.",
+      "createField": "Failed to create field. Please try again.",
+      "bookField": "Failed to book field. Please check availability and try again."
+    },
+    "loading": "Loading fields..."
+  },
+
+  "profile": {
+    "loading": "Loading your profile...",
+    "notFound": "Profile not found",
+    "memberSince": "Member since 2025",
+    "settingsTitle": "Profile Settings",
+    "editProfile": "Edit Profile",
+    "updating": "Updating...",
+    "username": "Username",
+    "email": "Email",
+    "notSet": "Not set",
+    "tournamentsTitle": "My Tournaments ({{count}})",
+    "createTournament": "Create Tournament",
+    "noTournaments": "No tournaments created yet",
+    "createFirst": "Create First Tournament",
+    "teams": "teams",
+    "editModal": {
+      "title": "Edit Profile"
+    },
+    "saveChanges": "Save Changes"
+  },
+
+  "teams": {
+    "detail": {
+      "loading": "Loading team...",
+      "notFound": "Team not found",
+      "backToTournaments": "Back to Tournaments",
+      "backToTeams": "Back to Teams",
+      "addPlayer": "Add Player",
+      "adding": "Adding...",
+      "rosterTitle": "Roster ({{count}} players)",
+      "jersey": "#",
+      "name": "Name",
+      "position": "Position",
+      "captain": "Captain",
+      "actions": "Actions",
+      "captainLabel": "Captain",
+      "remove": "Remove",
+      "removing": "Removing...",
+      "noPlayers": "No players yet. Add the first player!",
+      "addModal": {
+        "title": "Add New Player",
+        "name": "Name",
+        "position": "Position",
+        "jersey": "Jersey #",
+        "captain": "Captain"
+      },
+      "errors": {
+        "loadTeam": "Failed to load team. Please try again.",
+        "addPlayer": "Failed to add player. Please try again.",
+        "deletePlayer": "Failed to remove player. Please try again."
+      },
+      "confirmDeletePlayer": "Remove this player?"
+    }
+  },
+
+  "tournaments": {
+    "detail": {
+      "loading": "Loading tournament...",
+      "notFound": "Tournament not found",
+      "backToTournaments": "Back to Tournaments",
+      "teams": "teams",
+      "standingsTitle": "Standings",
+      "standings": {
+        "pos": "Pos",
+        "team": "Team",
+        "p": "P",
+        "w": "W",
+        "d": "D",
+        "l": "L",
+        "gd": "GD",
+        "pts": "Pts"
+      },
+      "viewMatches": "Go to Matches →",
+      "teamsTitle": "{{current}}/{{max}} Teams",
+      "teamDetails": "Team Details",
+      "createTeam": "Create Team",
+      "creating": "Creating...",
+      "createModal": {
+        "title": "Create Team for {{tournament}}",
+        "name": "Team Name",
+        "sport": "Sport"
+      },
+      "sports": {
+        "football": "Football",
+        "volleyball": "Volleyball",
+        "basketball": "Basketball"
+      }
+    },
+    "list": {
+      "loading": "Loading tournaments...",
+      "title": "Tournaments",
+      "createButton": "Create Tournament",
+      "starts": "Starts: {{date}}",
+      "teamCount": "{{current}}/{{max}} teams",
+      "viewDetails": "View Details",
+      "modal": {
+        "title": "Create New Tournament",
+        "name": "Tournament Name",
+        "sport": "Sport",
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "maxTeams": "Max Teams"
+      },
+      "sports": {
+        "football": "Football",
+        "volleyball": "Volleyball",
+        "basketball": "Basketball"
+      }
+    },
+    "matches": {
+      "loading": "Loading tournament matches...",
+      "title": "Tournament Matches",
+      "backToTournament": "Back to Tournament",
+      "createMatch": "Create Match",
+      "creating": "Creating...",
+      "setResult": "Set Result",
+      "updating": "Updating...",
+      "saveResult": "Save Result",
+      "createModal": {
+        "title": "Create New Match",
+        "tournament": "Tournament",
+        "homeTeam": "Home Team",
+        "awayTeam": "Away Team",
+        "scheduled": "Scheduled",
+        "round": "Round"
+      },
+      "errors": {
+        "loadMatches": "Failed to load matches. Please try again.",
+        "updateScore": "Failed to update score. Please try again."
+      }
+    },
+    "teams": {
+      "loading": "Loading tournament teams...",
+      "notFound": "Tournament not found",
+      "backToTournaments": "Back to Tournaments",
+      "teams": "teams",
+      "players": "players",
+      "createTeam": "Create Team",
+      "creating": "Creating...",
+      "teamsTitle": "Teams ({{count}})",
+      "viewTeam": "View Team →",
+      "createModal": {
+        "title": "Create New Team",
+        "name": "Team Name",
+        "sport": "Sport"
+      },
+      "sports": {
+        "football": "Football",
+        "volleyball": "Volleyball",
+        "basketball": "Basketball"
+      },
+      "errors": {
+        "loadTeams": "Failed to load tournament teams. Please try again.",
+        "createTeam": "Failed to create team. Check tournament availability."
+      }
     }
   }
 }

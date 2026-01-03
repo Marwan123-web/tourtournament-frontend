@@ -2,27 +2,30 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { authApi, getErrorMessage } from "@/lib/api"; // ✅ Your API file
+import { authApi, getErrorMessage } from "@/lib/api";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { ErrorBanner } from "@/components/ErrorBanner";
+import { FormInput } from "@/components/FormInput";
+import { useTranslations } from "next-intl";
 
 export default function RegisterPage() {
+  const t = useTranslations("auth.register");
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(""); // ✅ Error handling
+  const [error, setError] = useState("");
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(""); // ✅ Clear previous errors
+    setError("");
 
     try {
-      // ✅ Use your authApi (proxies to backend port 4000)
       await authApi.signup(email, password, name);
-
-      router.push("/login");
+      router.push("/auth/login");
     } catch (error: unknown) {
       setError(getErrorMessage(error));
     } finally {
@@ -35,55 +38,41 @@ export default function RegisterPage() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Create your account
+            {t("title")}
           </h2>
         </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <p className="text-sm text-red-800">{error}</p>
-          </div>
-        )}
+        <ErrorBanner error={error} />
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                className="relative block w-full px-3 py-3 border border-gray-300 rounded-md placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="Full name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-            <div>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                className="relative block w-full px-3 py-3 border border-gray-300 rounded-md placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="relative block w-full px-3 py-3 border border-gray-300 rounded-md placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-          </div>
+          <FormInput
+            label={t("name")}
+            id="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            disabled={loading}
+          />
+
+          <FormInput
+            label={t("email")}
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            disabled={loading}
+          />
+
+          <FormInput
+            label={t("password")}
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            disabled={loading}
+          />
 
           <div>
             <button
@@ -94,20 +83,20 @@ export default function RegisterPage() {
               {loading ? (
                 <>
                   <LoadingSpinner size="sm" />
-                  Creating account...
+                  <span className="ml-2">{t("submitting")}</span>
                 </>
               ) : (
-                "Create account"
+                t("submit")
               )}
             </button>
           </div>
 
           <div className="text-center">
             <Link
-              href="/login"
+              href="/auth/login"
               className="text-sm text-indigo-600 hover:text-indigo-500"
             >
-              Already have an account? Sign in
+              {t("loginLink")}
             </Link>
           </div>
         </form>

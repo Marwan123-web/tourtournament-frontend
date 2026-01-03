@@ -4,10 +4,17 @@ import Link from "next/link";
 import { Booking, Field } from "@/types/api";
 import { BookingStatus, Sport } from "@/enums/enums";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { ErrorBanner } from "@/components/ErrorBanner";
+import { CreateEditModal } from "@/components/CreateEditModal";
+import { StatusBadge } from "@/components/StatusBadge";
 import { fieldsApi, bookingsApi } from "@/lib/api";
 import { calculateTotalPrice, formatDate, formatTime } from "@/lib/date-utils";
+import { useTranslations } from "next-intl";
+import { FormInput } from "@/components/FormInput";
 
 export default function FieldsPage() {
+  const t = useTranslations("fields");
+
   const [fields, setFields] = useState<Field[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,8 +44,7 @@ export default function FieldsPage() {
       const data = await fieldsApi.getFields();
       setFields(data);
     } catch (error: unknown) {
-      console.error("Failed to fetch fields:", error);
-      setError("Failed to load fields. Please try again.");
+      setError(t("errors.fields"));
     } finally {
       setLoading(false);
     }
@@ -48,12 +54,9 @@ export default function FieldsPage() {
     try {
       setError("");
       const data = await bookingsApi.getBookings();
-      console.log("data", data);
-
       setBookings(data);
     } catch (error: unknown) {
-      console.error("Failed to fetch bookings:", error);
-      setError("Failed to load bookings. Please try again.");
+      setError(t("errors.bookings"));
     }
   };
 
@@ -74,8 +77,7 @@ export default function FieldsPage() {
       });
       await fetchFields();
     } catch (error: unknown) {
-      console.error("Failed to create field:", error);
-      setError("Failed to create field. Please try again.");
+      setError(t("errors.createField"));
     } finally {
       setUpdating(false);
     }
@@ -86,7 +88,7 @@ export default function FieldsPage() {
     startTime: string,
     endTime: string
   ) => {
-    if (!confirm("Confirm booking?")) return;
+    if (!confirm(t("confirmBooking"))) return;
 
     setUpdating(true);
     setError("");
@@ -95,50 +97,40 @@ export default function FieldsPage() {
       await bookingsApi.createBooking({ fieldId, startTime, endTime });
       await fetchBookings();
     } catch (error: unknown) {
-      console.error("Failed to book field:", error);
-      setError(
-        "Failed to book field. Please check availability and try again."
-      );
+      setError(t("errors.bookField"));
     } finally {
       setUpdating(false);
     }
   };
 
-  if (loading) return <LoadingSpinner size="xl" message="Loading fields..." />;
+  if (loading) return <LoadingSpinner size="xl" message={t("loading")} />;
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      {/* Error Display */}
-      {error && (
-        <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-          {error}
-        </div>
-      )}
+    <div className="p-8 max-w-7xl mx-auto space-y-12">
+      <ErrorBanner error={error} />
 
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center">
         <div>
           <Link
             href="/tournaments"
             className="text-indigo-600 hover:text-indigo-500 mb-2 inline-block"
           >
-            ← Back to Tournaments
+            ← {t("backToTournaments")}
           </Link>
-          <h1 className="text-4xl font-bold text-gray-900">
-            Fields & Bookings
-          </h1>
+          <h1 className="text-4xl font-bold text-gray-900">{t("title")}</h1>
         </div>
         <button
           onClick={() => setShowCreateField(true)}
           disabled={updating}
-          className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
         >
-          {updating ? "Creating..." : "Add Field"}
+          {updating ? t("creating") : t("addField")}
         </button>
       </div>
 
       {/* Fields Grid */}
-      <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-8">Available Fields</h2>
+      <section>
+        <h2 className="text-2xl font-bold mb-8">{t("availableFields")}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {fields.map((field) => (
             <div
@@ -149,26 +141,22 @@ export default function FieldsPage() {
                 <h3 className="text-2xl font-bold text-gray-900">
                   {field.name}
                 </h3>
-                <span
-                  className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                    field.isAvailable
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
-                >
-                  {field.isAvailable ? "Available" : "Booked"}
-                </span>
+                <StatusBadge
+                  status={field.isAvailable ? "available" : "booked"}
+                />
               </div>
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <span className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-full">
-                    {field.sport.toUpperCase()}
+                  <span className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-full capitalize">
+                    {field.sport}
                   </span>
-                  <span>{field.capacity} players</span>
+                  <span>
+                    {field.capacity} {t("players")}
+                  </span>
                 </div>
                 <p className="text-sm text-gray-500">{field.address}</p>
                 <p className="text-2xl font-bold text-indigo-600">
-                  ${field.pricePerHour}/hr
+                  ${field.pricePerHour}/{t("perHour")}
                 </p>
               </div>
               {field.isAvailable && (
@@ -179,9 +167,9 @@ export default function FieldsPage() {
                     handleBookField(field.id, startTime, endTime);
                   }}
                   disabled={updating}
-                  className="w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 font-semibold disabled:opacity-50"
                 >
-                  {updating ? "Booking..." : "Book Now (2hr slot)"}
+                  {updating ? t("booking") : t("bookNow")}
                 </button>
               )}
             </div>
@@ -189,164 +177,86 @@ export default function FieldsPage() {
         </div>
       </section>
 
-      {/* Bookings Calendar */}
-      <section>
-        <h2 className="text-2xl font-bold mb-6">My Bookings</h2>
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
-          <div className="flex items-center gap-4 mb-6">
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-            />
-            <div className="flex gap-2 text-sm">
-              <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs">
-                {BookingStatus.CONFIRMED}
-              </span>
-              <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs">
-                {BookingStatus.CANCELLED}
-              </span>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {bookings
-              .filter((booking) => {
-                const bookingDate = new Date(booking.date + "T00:00:00");
-                const filterDate = new Date(selectedDate + "T00:00:00");
-                return bookingDate <= filterDate;
-              })
-              .map((booking) => (
-                <div key={booking.id} className="border p-4 rounded-lg">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-semibold text-gray-900">
-                      {booking.field.name}
-                    </h4>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        booking.isActive
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {BookingStatus.CONFIRMED}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-500 mb-2">
-                    {formatDate(booking.date)} |{" "}
-                    {formatTime(booking.date, booking.startTime)} -{" "}
-                    {formatTime(booking.date, booking.endTime)}
-                  </p>
-                  <p className="text-sm font-medium text-indigo-600">
-                    $
-                    {calculateTotalPrice(
-                      booking.date,
-                      booking.startTime,
-                      booking.endTime,
-                      booking.field.pricePerHour
-                    )}
-                  </p>
-                </div>
-              ))}
-          </div>
-        </div>
-      </section>
-
       {/* Create Field Modal */}
-      {showCreateField && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-8 max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-6">Add New Field</h2>
-            {error && (
-              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
-            <form onSubmit={handleCreateField} className="space-y-4">
-              <input
-                type="text"
-                placeholder="Field Name (e.g. Pitch 1)"
-                value={newField.name}
-                onChange={(e) =>
-                  setNewField({ ...newField, name: e.target.value })
-                }
-                className="w-full p-3 border border-gray-300 rounded-lg"
-                required
-                disabled={updating}
-              />
-              <select
-                value={newField.sport}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                  const value = e.target.value as Sport;
-                  setNewField({ ...newField, sport: value });
-                }}
-                className="w-full p-3 border border-gray-300 rounded-lg"
-                disabled={updating}
-              >
-                <option value="football">Football</option>
-                <option value="volleyball">Volleyball</option>
-                <option value="basketball">Basketball</option>
-              </select>
-              <input
-                type="number"
-                placeholder="Capacity"
-                value={newField.capacity}
-                onChange={(e) =>
-                  setNewField({
-                    ...newField,
-                    capacity: parseInt(e.target.value),
-                  })
-                }
-                className="w-full p-3 border border-gray-300 rounded-lg"
-                required
-                disabled={updating}
-              />
-              <input
-                type="text"
-                placeholder="Address"
-                value={newField.address}
-                onChange={(e) =>
-                  setNewField({ ...newField, address: e.target.value })
-                }
-                className="w-full p-3 border border-gray-300 rounded-lg"
-                required
-                disabled={updating}
-              />
-              <input
-                type="number"
-                placeholder="Price per hour ($)"
-                value={newField.pricePerHour}
-                onChange={(e) =>
-                  setNewField({
-                    ...newField,
-                    pricePerHour: parseInt(e.target.value),
-                  })
-                }
-                className="w-full p-3 border border-gray-300 rounded-lg"
-                required
-                disabled={updating}
-              />
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="submit"
-                  disabled={updating}
-                  className="flex-1 bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {updating ? "Creating..." : "Create Field"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowCreateField(false)}
-                  disabled={updating}
-                  className="flex-1 bg-gray-200 text-gray-900 py-3 px-4 rounded-lg hover:bg-gray-300 disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
+      <CreateEditModal
+        isOpen={showCreateField}
+        onClose={() => setShowCreateField(false)}
+        title={t("createModal.title")}
+        onSubmit={handleCreateField}
+        updating={updating}
+        submitText={t("createField")}
+      >
+        <FormInput
+          label={t("createModal.name")}
+          id="name"
+          value={newField.name}
+          onChange={(e) => setNewField({ ...newField, name: e.target.value })}
+          required
+          disabled={updating}
+        />
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {t("createModal.sport")}
+          </label>
+          <select
+            value={newField.sport}
+            onChange={(e) =>
+              setNewField({
+                ...newField,
+                sport: e.target.value as Sport,
+              })
+            }
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+            disabled={updating}
+          >
+            <option value="football">{t("sports.football")}</option>
+            <option value="volleyball">{t("sports.volleyball")}</option>
+            <option value="basketball">{t("sports.basketball")}</option>
+          </select>
         </div>
-      )}
+
+        <FormInput
+          label={t("createModal.capacity")}
+          id="capacity"
+          type="number"
+          value={newField.capacity}
+          onChange={(e) =>
+            setNewField({
+              ...newField,
+              capacity: parseInt(e.target.value),
+            })
+          }
+          required
+          disabled={updating}
+        />
+
+        <FormInput
+          label={t("createModal.address")}
+          id="address"
+          value={newField.address}
+          onChange={(e) =>
+            setNewField({ ...newField, address: e.target.value })
+          }
+          required
+          disabled={updating}
+        />
+
+        <FormInput
+          label={t("createModal.price")}
+          id="price"
+          type="number"
+          value={newField.pricePerHour}
+          onChange={(e) =>
+            setNewField({
+              ...newField,
+              pricePerHour: parseInt(e.target.value),
+            })
+          }
+          required
+          disabled={updating}
+        />
+      </CreateEditModal>
     </div>
   );
 }

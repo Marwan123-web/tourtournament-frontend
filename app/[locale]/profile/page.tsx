@@ -4,14 +4,22 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { User, Tournament } from "@/types/api";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { ErrorBanner } from "@/components/ErrorBanner";
+import { CreateEditModal } from "@/components/CreateEditModal";
+import { FormInput } from "@/components/FormInput";
+import { Select } from "@/components/Select";
 import { authApi, tournamentApi, getErrorMessage } from "@/lib/api";
+import { useTranslations } from "next-intl";
+import { StatusBadge } from "@/components/StatusBadge";
 
 export default function ProfilePage() {
+  const t = useTranslations("profile");
+
   const [user, setUser] = useState<User | null>(null);
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [editMode, setEditMode] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [formData, setFormData] = useState({ username: "", email: "" });
   const router = useRouter();
@@ -35,7 +43,6 @@ export default function ProfilePage() {
         userTournaments.filter((t) => t.creator.id === userData.id)
       );
     } catch (error: unknown) {
-      console.error("Failed to fetch profile:", error);
       setError(getErrorMessage(error));
     } finally {
       setLoading(false);
@@ -53,10 +60,9 @@ export default function ProfilePage() {
 
     try {
       await authApi.updateProfile(formData);
-      setEditMode(false);
-      fetchProfile();
+      setShowEditModal(false);
+      await fetchProfile();
     } catch (error: unknown) {
-      console.error("Failed to update profile:", error);
       setError(getErrorMessage(error));
     } finally {
       setUpdating(false);
@@ -66,29 +72,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <LoadingSpinner size="xl" message="Loading your profile..." />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center max-w-2xl mx-auto">
-            <h2 className="text-2xl font-bold text-red-800 mb-4">
-              Failed to load profile
-            </h2>
-            <p className="text-red-700 mb-6">{error}</p>
-            <button
-              onClick={fetchProfile}
-              className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 flex items-center justify-center gap-2 mx-auto"
-            >
-              <LoadingSpinner size="sm" />
-              Retry
-            </button>
-          </div>
-        </div>
+        <LoadingSpinner size="xl" message={t("loading")} />
       </div>
     );
   }
@@ -97,7 +81,7 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <p className="text-xl text-gray-500">Profile not found</p>
+          <p className="text-xl text-gray-500">{t("notFound")}</p>
         </div>
       </div>
     );
@@ -105,92 +89,46 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto space-y-12">
         {/* Profile Header */}
-        <div className="text-center mb-12">
+        <div className="text-center">
           <div className="w-32 h-32 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full mx-auto mb-6 flex items-center justify-center shadow-2xl">
             <span className="text-4xl font-bold text-white">👤</span>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
             {user.username || user.email}
           </h1>
-          <p className="text-xl text-gray-500">Member since 2025</p>
+          <p className="text-xl text-gray-500">{t("memberSince")}</p>
         </div>
 
-        {/* Profile Edit Form */}
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 mb-12">
+        {/* Profile Card */}
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-900">
-              Profile Settings
+              {t("settingsTitle")}
             </h2>
             <button
-              onClick={() => setEditMode(!editMode)}
+              onClick={() => setShowEditModal(true)}
               disabled={updating}
-              className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium disabled:opacity-50"
+              className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium disabled:opacity-50 transition-colors"
             >
-              {updating ? "Updating..." : editMode ? "Cancel" : "Edit Profile"}
+              {updating ? t("updating") : t("editProfile")}
             </button>
           </div>
 
-          {editMode ? (
-            <form onSubmit={handleUpdateProfile} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Username
-                </label>
-                <input
-                  type="text"
-                  value={formData.username}
-                  onChange={(e) =>
-                    setFormData({ ...formData, username: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all disabled:opacity-50"
-                  placeholder="Enter username"
-                  disabled={updating}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all disabled:opacity-50"
-                  placeholder="Enter email"
-                  disabled={updating}
-                />
-              </div>
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-md p-3">
-                  <p className="text-sm text-red-800">{error}</p>
-                </div>
-              )}
-              <button
-                type="submit"
-                disabled={updating}
-                className="w-full bg-indigo-600 text-white py-3 px-6 rounded-lg hover:bg-indigo-700 font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {updating && <LoadingSpinner size="sm" />}
-                {updating ? "Updating..." : "Save Changes"}
-              </button>
-            </form>
-          ) : (
+          {!showEditModal && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Username
+                  {t("username")}
                 </label>
                 <p className="text-lg font-semibold text-gray-900">
-                  {user.username || "Not set"}
+                  {user.username || t("notSet")}
                 </p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
+                  {t("email")}
                 </label>
                 <p className="text-lg font-semibold text-gray-900">
                   {user.email}
@@ -202,19 +140,26 @@ export default function ProfilePage() {
 
         {/* My Tournaments */}
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            My Tournaments ({tournaments.length})
-          </h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">
+              {t("tournamentsTitle", { count: tournaments.length })}
+            </h2>
+            <Link
+              href="/tournaments"
+              className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700"
+            >
+              {t("createTournament")}
+            </Link>
+          </div>
+
           {tournaments.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">
-                No tournaments created yet
-              </p>
+              <p className="text-gray-500 text-lg mb-4">{t("noTournaments")}</p>
               <Link
                 href="/tournaments"
-                className="mt-4 inline-block bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700"
+                className="inline-block bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700"
               >
-                Create First Tournament
+                {t("createFirst")}
               </Link>
             </div>
           ) : (
@@ -230,11 +175,9 @@ export default function ProfilePage() {
                   <p className="text-sm text-gray-500 mb-2 capitalize">
                     {tournament.sport}
                   </p>
-                  <span className="px-3 py-1 bg-indigo-100 text-indigo-800 text-xs font-medium rounded-full mb-4 inline-block">
-                    {tournament.status}
-                  </span>
-                  <p className="text-sm text-gray-500">
-                    {tournament.currentTeams}/{tournament.maxTeams} teams
+                  <StatusBadge status={tournament.status} />
+                  <p className="text-sm text-gray-500 mt-2">
+                    {tournament.currentTeams}/{tournament.maxTeams} {t("teams")}
                   </p>
                 </div>
               ))}
@@ -242,6 +185,42 @@ export default function ProfilePage() {
           )}
         </div>
       </div>
+
+      {/* Edit Profile Modal */}
+      {showEditModal && (
+        <CreateEditModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          title={t("editModal.title")}
+          onSubmit={handleUpdateProfile}
+          updating={updating}
+          submitText={t("saveChanges")}
+        >
+          <ErrorBanner error={error} />
+
+          <FormInput
+            label={t("username")}
+            id="username"
+            value={formData.username}
+            onChange={(e) =>
+              setFormData({ ...formData, username: e.target.value })
+            }
+            disabled={updating}
+          />
+
+          <FormInput
+            label={t("email")}
+            id="email"
+            type="email"
+            value={formData.email}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
+            required
+            disabled={updating}
+          />
+        </CreateEditModal>
+      )}
     </div>
   );
 }
