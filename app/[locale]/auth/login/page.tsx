@@ -2,14 +2,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { authApi, getErrorMessage } from "@/lib/api";
+import { getErrorMessage } from "@/lib/api";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorBanner } from "@/components/ErrorBanner";
 import { FormInput } from "@/components/FormInput";
 import { useTranslations } from "next-intl";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function LoginPage() {
   const t = useTranslations("auth.login");
+  const { login } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,14 +25,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const { access_token, user } = await authApi.login(email, password);
-      localStorage.setItem("token", access_token);
-      document.cookie = `auth-token=${access_token}; path=/; max-age=86400`;
-      document.cookie = `user-role=${
-        user.role || "user"
-      }; path=/; max-age=86400`;
-      router.push("/tournaments");
-      router.refresh();
+      login(email, password);
     } catch (error: unknown) {
       setError(getErrorMessage(error));
     } finally {
@@ -53,7 +48,7 @@ export default function LoginPage() {
           <FormInput
             label={t("email")}
             id="email"
-            type="email"
+            type="text"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required

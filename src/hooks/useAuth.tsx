@@ -41,16 +41,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {  // ✅ Re
     }
   };
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string) => {    
     const { access_token, user } = await authApi.login(email, password);
     localStorage.setItem('token', access_token);
+    document.cookie = `auth-token=${access_token}; path=/; max-age=86400`;
+    document.cookie = `user-role=${
+      user.role || "user"
+    }; path=/; max-age=86400`;
     setUser(user);
+    router.refresh();
     router.push('/tournaments');
   };
 
   const signup = async (email: string, password: string, username: string) => {
     const { access_token, user } = await authApi.signup(email, password, username);
     localStorage.setItem('token', access_token);
+    document.cookie = `auth-token=${access_token}; path=/; max-age=86400`;
+    document.cookie = `user-role=${
+      user.role || "user"
+    }; path=/; max-age=86400`;
     setUser(user);
     router.push('/tournaments');
   };

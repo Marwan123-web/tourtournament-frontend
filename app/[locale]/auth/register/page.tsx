@@ -7,9 +7,11 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorBanner } from "@/components/ErrorBanner";
 import { FormInput } from "@/components/FormInput";
 import { useTranslations } from "next-intl";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function RegisterPage() {
   const t = useTranslations("auth.register");
+  const { signup } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,8 +26,7 @@ export default function RegisterPage() {
     setError("");
 
     try {
-      await authApi.signup(email, password, name);
-      router.push("/auth/login");
+      signup(email, password, name);      
     } catch (error: unknown) {
       setError(getErrorMessage(error));
     } finally {
