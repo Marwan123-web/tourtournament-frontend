@@ -169,6 +169,31 @@
         "addPlayer": "Failed to add player. Please try again.",
         "deletePlayer": "Failed to remove player. Please try again."
       },
+      "positions": {
+        "goalkeeper": "Goalkeeper",
+        "center_back": "Center Back",
+        "right_back": "Right Back",
+        "left_back": "Left Back",
+        "defensive_midfielder": "Defensive Midfielder",
+        "central_midfielder": "Central Midfielder",
+        "attacking_midfielder": "Attacking Midfielder",
+        "right_winger": "Right Winger",
+        "left_winger": "Left Winger",
+        "striker": "Striker",
+        
+        "point_guard": "Point Guard",
+        "shooting_guard": "Shooting Guard",
+        "small_forward": "Small Forward",
+        "power_forward": "Power Forward",
+        "center": "Center",
+        
+        "setter": "Setter",
+        "outside_hitter": "Outside Hitter",
+        "opposite_hitter": "Opposite Hitter",
+        "middle_blocker": "Middle Blocker",
+        "libero": "Libero",
+        "defensive_specialist": "Defensive Specialist"
+      },
       "confirmDeletePlayer": "Remove this player?"
     }
   },
@@ -192,6 +217,7 @@
       },
       "viewMatches": "Go to Matches →",
       "teamsTitle": "{current}/{max} Teams",
+      "viewAll": "View All Teams",
       "teamDetails": "Team Details",
       "createTeam": "Create Team",
       "creating": "Creating...",

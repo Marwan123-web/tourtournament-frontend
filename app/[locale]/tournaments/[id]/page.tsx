@@ -179,12 +179,21 @@ export default function TournamentDetail() {
 
       {/* Teams */}
       <section>
-        <h2 className="text-2xl font-bold mb-6">
-          {t("teamsTitle", {
-            current: tournament.currentTeams,
-            max: tournament.maxTeams,
-          })}
-        </h2>
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold mb-6">
+            {t("teamsTitle", {
+              current: tournament.currentTeams,
+              max: tournament.maxTeams,
+            })}
+          </h2>
+          <Link
+            href={`/tournaments/${tournament.id}/teams`}
+            className="text-indigo-600 hover:text-indigo-500 mb-2 inline-block"
+          >
+             {t("viewAll")}
+          </Link>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {teams.map((team) => (
             <div
@@ -224,24 +233,6 @@ export default function TournamentDetail() {
             value={newTeam.name}
             onChange={(e) => setNewTeam({ ...newTeam, name: e.target.value })}
             required
-            disabled={updating}
-          />
-
-          <Select
-            label={t("createModal.sport")}
-            id="team-sport"
-            value={newTeam.sport}
-            onChange={(e) =>
-              setNewTeam({
-                ...newTeam,
-                sport: e.target.value as Sport,
-              })
-            }
-            options={[
-              { value: "football", label: t("sports.football") },
-              { value: "volleyball", label: t("sports.volleyball") },
-              { value: "basketball", label: t("sports.basketball") },
-            ]}
             disabled={updating}
           />
         </CreateEditModal>

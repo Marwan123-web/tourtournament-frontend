@@ -9,6 +9,8 @@ import { CreateEditModal } from "@/components/CreateEditModal";
 import { FormInput } from "@/components/FormInput";
 import { teamsApi, playersApi } from "@/lib/api";
 import { useTranslations } from "next-intl";
+import { Select } from "@/components/Select";
+import { sportPositionsMap } from "@/enums/enums";
 
 export default function TeamDetail() {
   const t = useTranslations("teams.detail");
@@ -26,6 +28,7 @@ export default function TeamDetail() {
     jerseyNumber: "",
     isCaptain: false,
   });
+  const [positions, setPositions] = useState<string[]>([]);
 
   useEffect(() => {
     if (params.teamId) fetchTeam();
@@ -38,6 +41,7 @@ export default function TeamDetail() {
       const data = await teamsApi.getTeam(params.teamId as string);
       setTeam(data);
       setPlayers(data.players || []);
+      setPositions(sportPositionsMap[data.sport] || []);
     } catch (error: unknown) {
       setError(t("errors.loadTeam"));
     } finally {
@@ -229,14 +233,15 @@ export default function TeamDetail() {
           disabled={updating}
         />
 
-        <FormInput
+        <Select
           label={t("addModal.position")}
           id="position"
           value={newPlayer.position}
-          onChange={(e) =>
-            setNewPlayer({ ...newPlayer, position: e.target.value })
-          }
-          required
+          onChange={(e) => setNewPlayer({ ...newPlayer, position: e.target.value })}
+          options={positions.map(pos => ({
+            value: pos,
+            label: t(`positions.${pos}`) || pos
+          }))}
           disabled={updating}
         />
 

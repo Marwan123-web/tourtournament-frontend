@@ -7,7 +7,6 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorBanner } from "@/components/ErrorBanner";
 import { CreateEditModal } from "@/components/CreateEditModal";
 import { FormInput } from "@/components/FormInput";
-import { Select } from "@/components/Select";
 import { teamsApi, tournamentApi } from "@/lib/api";
 import { useTranslations } from "next-intl";
 import { Sport } from "@/enums/enums";
@@ -15,6 +14,7 @@ import { Sport } from "@/enums/enums";
 export default function TournamentTeamsPage() {
   const t = useTranslations("tournaments.teams");
   const params = useParams();
+  const tournamentId = params.id as string;
 
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
@@ -35,14 +35,10 @@ export default function TournamentTeamsPage() {
     try {
       setLoading(true);
       setError("");
-      const [tournamentData, teamsData] = await Promise.all([
-        tournamentApi.getTournament(params.id as string),
-        teamsApi.getTournamentTeams(params.id as string),
-      ]);
-
-      setTournament(tournamentData);
+      const teamsData = await teamsApi.getTournamentTeams(params.id as string);
+      setTournament(teamsData[0].tournament) 
       setTeams(teamsData);
-      setNewTeam((prev) => ({ ...prev, sport: tournamentData.sport }));
+      setNewTeam((prev) => ({ ...prev, sport: teamsData[0]?.tournament?.sport }));
     } catch (error: unknown) {
       setError(t("errors.loadTeams"));
     } finally {
@@ -80,7 +76,7 @@ export default function TournamentTeamsPage() {
     return (
       <div className="p-8 text-center">
         <div className="text-gray-500 mb-4">{t("notFound")}</div>
-        <Link href="/tournaments" className="text-indigo-600 hover:underline">
+        <Link href={`/tournaments/${tournamentId}`} className="text-indigo-600 hover:underline">
           ← {t("backToTournaments")}
         </Link>
       </div>
@@ -94,7 +90,7 @@ export default function TournamentTeamsPage() {
       <div className="flex justify-between items-center">
         <div>
           <Link
-            href="/tournaments"
+            href={`/tournaments/${tournamentId}`}
             className="text-indigo-600 hover:text-indigo-500 mb-4 inline-block"
           >
             ← {t("backToTournaments")}
@@ -180,19 +176,6 @@ export default function TournamentTeamsPage() {
           onChange={(e) => setNewTeam({ ...newTeam, name: e.target.value })}
           placeholder="e.g. FC Galaxy"
           required
-          disabled={updating}
-        />
-
-        <Select
-          label={t("createModal.sport")}
-          id="team-sport"
-          value={newTeam.sport}
-          onChange={(e) => setNewTeam({ ...newTeam, sport: e.target.value })}
-          options={[
-            { value: "football", label: t("sports.football") },
-            { value: "volleyball", label: t("sports.volleyball") },
-            { value: "basketball", label: t("sports.basketball") },
-          ]}
           disabled={updating}
         />
       </CreateEditModal>
