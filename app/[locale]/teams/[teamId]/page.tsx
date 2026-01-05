@@ -101,7 +101,7 @@ export default function TeamDetail() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8">
-      <ErrorBanner error={error} />
+      <ErrorBanner error={error} onClear={() => setError('')} />
 
       <div className="flex justify-between items-start">
         <div>

@@ -171,7 +171,7 @@ export default function AdminUsers() {
         <h1 className="text-4xl font-bold text-gray-900">{t("title")}</h1>
       </div>
 
-      <ErrorBanner error={error} />
+      <ErrorBanner error={error} onClear={() => setError('')} />
 
       <SearchInput
         value={search}

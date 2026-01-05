@@ -87,7 +87,7 @@ export default function TournamentsPage() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8">
-      <ErrorBanner error={error} />
+      <ErrorBanner error={error} onClear={() => setError('')} />
 
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">{t("title")}</h1>

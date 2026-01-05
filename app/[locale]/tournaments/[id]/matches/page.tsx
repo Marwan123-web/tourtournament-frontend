@@ -115,7 +115,7 @@ export default function TournamentMatchesPage() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8">
-      <ErrorBanner error={error} />
+      <ErrorBanner error={error} onClear={() => setError('')} />
 
       <div className="flex justify-between items-center">
         <div>
@@ -285,7 +285,7 @@ export default function TournamentMatchesPage() {
           updating={updating}
           submitText={t("saveResult")}
         >
-          <ErrorBanner error={error} />
+          <ErrorBanner error={error} onClear={() => setError('')} />
 
           <div className="flex items-center justify-center space-x-8 mb-6">
             <div className="text-center">

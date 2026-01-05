@@ -89,7 +89,7 @@ export default function TournamentTeamsPage() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-12">
-      <ErrorBanner error={error} />
+      <ErrorBanner error={error} onClear={() => setError('')} />
 
       <div className="flex justify-between items-center">
         <div>

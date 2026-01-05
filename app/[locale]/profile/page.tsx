@@ -196,7 +196,7 @@ export default function ProfilePage() {
           updating={updating}
           submitText={t("saveChanges")}
         >
-          <ErrorBanner error={error} />
+          <ErrorBanner error={error} onClear={() => setError('')} />
 
           <FormInput
             label={t("username")}
