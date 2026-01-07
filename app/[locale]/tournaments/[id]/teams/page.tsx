@@ -37,9 +37,12 @@ export default function TournamentTeamsPage() {
       setLoading(true);
       setError("");
       const teamsData = await teamsApi.getTournamentTeams(params.id as string);
-      setTournament(teamsData[0].tournament) 
+      setTournament(teamsData[0].tournament);
       setTeams(teamsData);
-      setNewTeam((prev) => ({ ...prev, sport: teamsData[0]?.tournament?.sport }));
+      setNewTeam((prev) => ({
+        ...prev,
+        sport: teamsData[0]?.tournament?.sport,
+      }));
     } catch (error: unknown) {
       setError(t("errors.loadTeams"));
     } finally {
@@ -76,7 +79,10 @@ export default function TournamentTeamsPage() {
     return (
       <div className="p-8 text-center">
         <div className="text-gray-500 mb-4">{t("notFound")}</div>
-        <Link href={`/tournaments/${tournamentId}`} className="text-indigo-600 hover:underline">
+        <Link
+          href={`/tournaments/${tournamentId}`}
+          className="text-indigo-600 hover:underline"
+        >
           ← {t("backToTournaments")}
         </Link>
       </div>
@@ -85,7 +91,7 @@ export default function TournamentTeamsPage() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-12">
-      <ErrorBanner error={error} onClear={() => setError('')} />
+      <ErrorBanner error={error} onClear={() => setError("")} />
 
       <div className="flex justify-between items-center">
         <div>
@@ -107,15 +113,16 @@ export default function TournamentTeamsPage() {
             </span>
           </div>
         </div>
-        {(tournament.status === TournamentStatus.REGISTRATION && tournament.currentTeams < tournament.maxTeams) && (
-          <button
-            onClick={() => setShowCreateTeam(true)}
-            disabled={updating}
-            className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2 disabled:opacity-50"
-          >
-            {updating ? t("creating") : t("createTeam")}
-          </button>
-        )}
+        {tournament.status === TournamentStatus.REGISTRATION &&
+          tournament.currentTeams < tournament.maxTeams && (
+            <button
+              onClick={() => setShowCreateTeam(true)}
+              disabled={updating}
+              className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2 disabled:opacity-50"
+            >
+              {updating ? t("creating") : t("createTeam")}
+            </button>
+          )}
       </div>
 
       {/* Teams Grid */}
@@ -124,12 +131,9 @@ export default function TournamentTeamsPage() {
           {t("teamsTitle", { count: teams.length })}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {teams.map((team) => (
-          <TeamCard 
-            key={team.id} 
-            team={team} 
-          />
-        ))}
+          {teams.map((team) => (
+            <TeamCard key={team.id} team={team} />
+          ))}
         </div>
       </section>
 

@@ -180,13 +180,13 @@
         "right_winger": "Right Winger",
         "left_winger": "Left Winger",
         "striker": "Striker",
-        
+
         "point_guard": "Point Guard",
         "shooting_guard": "Shooting Guard",
         "small_forward": "Small Forward",
         "power_forward": "Power Forward",
         "center": "Center",
-        
+
         "setter": "Setter",
         "outside_hitter": "Outside Hitter",
         "opposite_hitter": "Opposite Hitter",
@@ -235,6 +235,7 @@
     "list": {
       "loading": "Loading tournaments...",
       "title": "Tournaments",
+      "teams": "teams",
       "createButton": "Create Tournament",
       "starts": "Starts: {date}",
       "teamCount": "{current}/{max} teams",

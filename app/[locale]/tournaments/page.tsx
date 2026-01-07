@@ -12,6 +12,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { FormInput } from "@/components/FormInput";
 import { tournamentApi, getErrorMessage } from "@/lib/api";
 import { useTranslations } from "next-intl";
+import TournamentCard from "@/components/tournament/TournamentCard";
 
 export default function TournamentsPage() {
   const t = useTranslations("tournaments.list");
@@ -87,7 +88,7 @@ export default function TournamentsPage() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8">
-      <ErrorBanner error={error} onClear={() => setError('')} />
+      <ErrorBanner error={error} onClear={() => setError("")} />
 
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">{t("title")}</h1>
@@ -102,39 +103,7 @@ export default function TournamentsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {tournaments.map((tournament) => (
-          <div
-            key={tournament.id}
-            className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 group"
-          >
-            <h3 className="text-xl font-semibold text-gray-900 mb-3 line-clamp-2">
-              {tournament.name}
-            </h3>
-            <div className="space-y-2 mb-4">
-              <p className="text-sm text-gray-500">
-                {t("starts", {
-                  date: new Date(tournament.startDate).toLocaleDateString(),
-                })}
-              </p>
-              <p className="text-sm text-gray-500">
-                {t("teamCount", {
-                  current: tournament.currentTeams,
-                  max: tournament.maxTeams,
-                })}
-              </p>
-            </div>
-            <StatusBadge
-              status={tournament.status}
-              className={`px-3 py-1 text-xs font-medium ${getStatusColor(
-                tournament.status
-              )}`}
-            />
-            <button
-              onClick={() => router.push(`/tournaments/${tournament.id}`)}
-              className="mt-6 w-full bg-indigo-600 text-white py-3 px-6 rounded-lg hover:bg-indigo-700 text-sm font-medium transition-all group-hover:-translate-y-0.5"
-            >
-              {t("viewDetails")}
-            </button>
-          </div>
+          <TournamentCard key={tournament.id} tournament={tournament} />
         ))}
       </div>
 
