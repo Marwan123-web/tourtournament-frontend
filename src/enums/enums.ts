@@ -59,3 +59,12 @@ export const sportPositionsMap: Record<string, string[]> = {
   basketball: Object.values(BasketballPosition),
   volleyball: Object.values(VolleyballPosition),
 };
+
+export function getMaxRosterSize(sport: Sport): number {
+  const sizes: Record<Sport, number> = {
+    [Sport.FOOTBALL]: 22,    // 11 field + substitutes
+    [Sport.BASKETBALL]: 15,  // 5 court + bench
+    [Sport.VOLLEYBALL]: 14,  // 6 court + liberos/subs
+  };
+  return sizes[sport] || 20;  // Default fallback
+}

@@ -150,7 +150,7 @@ export default function TournamentDetail() {
             status={tournament.isActive ? "active" : "inactive"}
             className="text-sm px-3 py-1"
           />
-          {tournament.status === TournamentStatus.REGISTRATION && (
+          {(tournament.status === TournamentStatus.REGISTRATION && tournament.currentTeams < tournament.maxTeams) && (
             <button
               onClick={() => setShowCreateTeam(true)}
               disabled={updating}

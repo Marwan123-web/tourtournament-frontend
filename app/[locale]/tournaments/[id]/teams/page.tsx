@@ -9,7 +9,7 @@ import { CreateEditModal } from "@/components/CreateEditModal";
 import { FormInput } from "@/components/FormInput";
 import { teamsApi, tournamentApi } from "@/lib/api";
 import { useTranslations } from "next-intl";
-import { Sport } from "@/enums/enums";
+import { Sport, TournamentStatus } from "@/enums/enums";
 
 export default function TournamentTeamsPage() {
   const t = useTranslations("tournaments.teams");
@@ -106,7 +106,7 @@ export default function TournamentTeamsPage() {
             </span>
           </div>
         </div>
-        {tournament.status === "registration" && (
+        {(tournament.status === TournamentStatus.REGISTRATION && tournament.currentTeams < tournament.maxTeams) && (
           <button
             onClick={() => setShowCreateTeam(true)}
             disabled={updating}

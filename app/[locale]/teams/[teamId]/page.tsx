@@ -10,7 +10,7 @@ import { FormInput } from "@/components/FormInput";
 import { teamsApi, playersApi } from "@/lib/api";
 import { useTranslations } from "next-intl";
 import { Select } from "@/components/Select";
-import { sportPositionsMap } from "@/enums/enums";
+import { getMaxRosterSize, sportPositionsMap } from "@/enums/enums";
 
 export default function TeamDetail() {
   const t = useTranslations("teams.detail");
@@ -130,13 +130,16 @@ export default function TeamDetail() {
             )}
           </div>
         </div>
-        <button
-          onClick={() => setShowAddPlayer(true)}
-          disabled={updating}
-          className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2 disabled:opacity-50"
-        >
-          {updating ? t("adding") : t("addPlayer")}
-        </button>
+        { players.length < getMaxRosterSize(team.tournament.sport) &&
+          <button
+            onClick={() => setShowAddPlayer(true)}
+            disabled={updating}
+            className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2 disabled:opacity-50"
+          >
+            {updating ? t("adding") : t("addPlayer")}
+          </button>
+        }
+
       </div>
 
       {/* Players Table */}
