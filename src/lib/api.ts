@@ -9,6 +9,7 @@ import type {
   Field,
   Booking,
   Match,
+  NewPlayer,
 } from "@/types/api";
 import { toast } from "react-toastify";
 import { Sport } from "@/enums/enums";
@@ -147,7 +148,7 @@ export const matchesApi = {
 
 export const teamsApi = {
   // Create new team (POST /api/teams)
-  createTeam: (data: { tournamentId: string; name: string; sport: string }) =>
+  createTeam: (data: { tournamentId: string; name: string; }) =>
     api.post("/api/teams", data).then((res) => res.data),
 
   // Get teams by tournament (GET /api/teams/tournament/:tournamentId)
@@ -163,13 +164,7 @@ export const teamsApi = {
 
 export const playersApi = {
   // Add player to team (POST /api/teams/:id/players) - assuming this exists
-  addPlayer: (playerData: {
-    name: string;
-    position: string;
-    jerseyNumber: string;
-    isCaptain: boolean;
-    teamId: string;
-  }) => api.post(`/api/players`, playerData).then((res) => res.data),
+  addPlayer: (playerData: NewPlayer & {teamId: string}) => api.post(`/api/players`, playerData).then((res) => res.data),
 
   // Delete player from team (DELETE /api/teams/:id/players/:playerId)
   deletePlayer: (teamId: string, playerId: string) =>

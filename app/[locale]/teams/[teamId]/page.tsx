@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import type { Player, Team } from "@/types/api";
+import type { NewPlayer, Player, Team } from "@/types/api";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorBanner } from "@/components/ErrorBanner";
 import { CreateEditModal } from "@/components/CreateEditModal";
@@ -22,10 +22,10 @@ export default function TeamDetail() {
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
   const [showAddPlayer, setShowAddPlayer] = useState(false);
-  const [newPlayer, setNewPlayer] = useState({
+  const [newPlayer, setNewPlayer] = useState<NewPlayer>({
     name: "",
     position: "",
-    jerseyNumber: "",
+    jerseyNumber: null,
     isCaptain: false,
   });
   const [positions, setPositions] = useState<string[]>([]);
@@ -41,7 +41,7 @@ export default function TeamDetail() {
       const data = await teamsApi.getTeam(params.teamId as string);
       setTeam(data);
       setPlayers(data.players || []);
-      setPositions(sportPositionsMap[data.sport] || []);
+      setPositions(sportPositionsMap[data?.tournament?.sport] || []);
     } catch (error: unknown) {
       setError(t("errors.loadTeam"));
     } finally {
@@ -63,7 +63,7 @@ export default function TeamDetail() {
       setNewPlayer({
         name: "",
         position: "",
-        jerseyNumber: "",
+        jerseyNumber: null,
         isCaptain: false,
       });
       await fetchTeam();
@@ -118,7 +118,7 @@ export default function TeamDetail() {
           <h1 className="text-4xl font-bold text-gray-900 mb-2">{team.name}</h1>
           <div className="flex gap-4 text-sm text-gray-500 items-center">
             <span className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs font-medium capitalize">
-              {team.sport}
+              {team.tournament.sport}
             </span>
             {team.tournament && (
               <Link
@@ -191,7 +191,7 @@ export default function TeamDetail() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
-                        onClick={() => handleDeletePlayer(player.id)}
+                        onClick={() => handleDeletePlayer(player?.id)}
                         disabled={updating}
                         className="text-red-600 hover:text-red-900 disabled:opacity-50"
                       >
@@ -227,7 +227,7 @@ export default function TeamDetail() {
         <FormInput
           label={t("addModal.name")}
           id="name"
-          value={newPlayer.name}
+          value={newPlayer.name ?? ''}
           onChange={(e) => setNewPlayer({ ...newPlayer, name: e.target.value })}
           required
           disabled={updating}
@@ -236,7 +236,7 @@ export default function TeamDetail() {
         <Select
           label={t("addModal.position")}
           id="position"
-          value={newPlayer.position}
+          value={newPlayer.position ?? ''}
           onChange={(e) => setNewPlayer({ ...newPlayer, position: e.target.value })}
           options={positions.map(pos => ({
             value: pos,
@@ -250,11 +250,11 @@ export default function TeamDetail() {
             label={t("addModal.jersey")}
             id="jersey"
             type="number"
-            value={newPlayer.jerseyNumber}
+            value={newPlayer.jerseyNumber ?? null}
             onChange={(e) =>
               setNewPlayer({
                 ...newPlayer,
-                jerseyNumber: e.target.value,
+                jerseyNumber: +e.target.value,
               })
             }
             disabled={updating}

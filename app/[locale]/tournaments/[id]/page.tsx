@@ -65,7 +65,6 @@ export default function TournamentDetail() {
       await teamsApi.createTeam({
         tournamentId: params.id as string,
         name: newTeam.name,
-        sport: newTeam.sport,
       });
       setShowCreateTeam(false);
       setNewTeam({ name: "", sport: tournament?.sport || Sport.FOOTBALL });
@@ -204,7 +203,7 @@ export default function TournamentDetail() {
                 {team.name}
               </h3>
               <p className="text-sm text-gray-500 mb-4 capitalize">
-                {team.sport}
+                {team.tournament.sport}
               </p>
               <Link
                 href={`/teams/${team.id}`}

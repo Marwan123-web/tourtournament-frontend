@@ -5,7 +5,7 @@ interface FormInputProps {
   label?: string;
   id: string;
   type?: string;
-  value: string | number;
+  value: string | number | null;
   onChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => void;
@@ -43,7 +43,7 @@ export function FormInput({
       <input
         id={id}
         type={type}
-        value={value}
+        value={value ?? ''}
         onChange={onChange}
         required={required}
         disabled={disabled}

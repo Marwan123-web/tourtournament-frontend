@@ -55,7 +55,6 @@ export default function TournamentTeamsPage() {
       await teamsApi.createTeam({
         tournamentId: params.id as string,
         name: newTeam.name,
-        sport: newTeam.sport as Sport,
       });
       setShowCreateTeam(false);
       setNewTeam({
@@ -143,7 +142,7 @@ export default function TournamentTeamsPage() {
               <div className="space-y-2 mb-6">
                 <div className="flex items-center gap-2 text-sm text-gray-500">
                   <span className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-full capitalize">
-                    {team.sport}
+                    {team.tournament.sport}
                   </span>
                   <span>
                     {team.players?.length || 0} {t("players")}

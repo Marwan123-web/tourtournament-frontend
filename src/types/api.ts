@@ -64,8 +64,16 @@ export interface Player {
   id: string;
   name: string;
   position: string;
-  jerseyNumber: number;
+  jerseyNumber: number | null;
   isCaptain: boolean;
+}
+
+export interface NewPlayer {
+  name: string;
+  position: string;
+  jerseyNumber: number | null;
+  isCaptain: boolean;
+  // teamId: string;
 }
 
 export interface Field {
