@@ -13,6 +13,7 @@ import { tournamentApi, teamsApi, getErrorMessage } from "@/lib/api";
 import { useTranslations } from "next-intl";
 import { DataTable } from "@/components/DataTable";
 import { FormInput } from "@/components/FormInput";
+import TeamCard from "@/components/team/TeamCard";
 
 export default function TournamentDetail() {
   const t = useTranslations("tournaments.detail");
@@ -195,23 +196,10 @@ export default function TournamentDetail() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {teams.map((team) => (
-            <div
-              key={team.id}
-              className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow"
-            >
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                {team.name}
-              </h3>
-              <p className="text-sm text-gray-500 mb-4 capitalize">
-                {team.tournament.sport}
-              </p>
-              <Link
-                href={`/teams/${team.id}`}
-                className="w-full block bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 text-sm font-medium text-center"
-              >
-                {t("teamDetails")}
-              </Link>
-            </div>
+            <TeamCard 
+              key={team.id} 
+              team={team} 
+            />
           ))}
         </div>
       </section>
