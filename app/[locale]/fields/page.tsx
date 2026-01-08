@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Booking, Field } from "@/types/api";
-import { BookingStatus, Sport } from "@/enums/enums";
+import { BookingStatus, Sport, Sports } from "@/enums/enums";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorBanner } from "@/components/ErrorBanner";
 import { CreateEditModal } from "@/components/CreateEditModal";
@@ -11,6 +11,7 @@ import { fieldsApi, bookingsApi } from "@/lib/api";
 import { calculateTotalPrice, formatDate, formatTime } from "@/lib/date-utils";
 import { useTranslations } from "next-intl";
 import { FormInput } from "@/components/FormInput";
+import FieldCard from "@/components/field/FieldCard";
 
 export default function FieldsPage() {
   const t = useTranslations("fields");
@@ -107,7 +108,7 @@ export default function FieldsPage() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-12">
-      <ErrorBanner error={error} onClear={() => setError('')} />
+      <ErrorBanner error={error} onClear={() => setError("")} />
 
       <div className="flex justify-between items-center">
         <div>
@@ -133,6 +134,16 @@ export default function FieldsPage() {
         <h2 className="text-2xl font-bold mb-8">{t("availableFields")}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {fields.map((field) => (
+            <FieldCard
+              key={field.id}
+              field={field}
+              selectedDate={selectedDate}
+              updating={updating}
+              onBook={handleBookField}
+            />
+          ))}
+
+          {/* {fields.map((field) => (
             <div
               key={field.id}
               className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 hover:shadow-md transition-shadow flex flex-col justify-between gap-3"
@@ -173,7 +184,7 @@ export default function FieldsPage() {
                 </button>
               )}
             </div>
-          ))}
+          ))} */}
         </div>
       </section>
 
@@ -210,9 +221,11 @@ export default function FieldsPage() {
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
             disabled={updating}
           >
-            <option value="football">{t("sports.football")}</option>
-            <option value="volleyball">{t("sports.volleyball")}</option>
-            <option value="basketball">{t("sports.basketball")}</option>
+            {Sports.map((sport) => (
+              <option value={sport.value} key={sport.id}>
+                {t(sport.name)}
+              </option>
+            ))}
           </select>
         </div>
 

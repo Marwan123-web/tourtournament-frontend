@@ -102,7 +102,7 @@ export const fieldsApi = {
   createField: (data: {
     name: string;
     sport: Sport;
-    capacity: number;
+    capacity: number | null;
     address: string;
     pricePerHour: number;
   }) => api.post<Field>("/api/fields", data).then((res) => res.data),
@@ -148,7 +148,7 @@ export const matchesApi = {
 
 export const teamsApi = {
   // Create new team (POST /api/teams)
-  createTeam: (data: { tournamentId: string; name: string; }) =>
+  createTeam: (data: { tournamentId: string; name: string }) =>
     api.post("/api/teams", data).then((res) => res.data),
 
   // Get teams by tournament (GET /api/teams/tournament/:tournamentId)
@@ -164,7 +164,8 @@ export const teamsApi = {
 
 export const playersApi = {
   // Add player to team (POST /api/teams/:id/players) - assuming this exists
-  addPlayer: (playerData: NewPlayer & {teamId: string}) => api.post(`/api/players`, playerData).then((res) => res.data),
+  addPlayer: (playerData: NewPlayer & { teamId: string }) =>
+    api.post(`/api/players`, playerData).then((res) => res.data),
 
   // Delete player from team (DELETE /api/teams/:id/players/:playerId)
   deletePlayer: (teamId: string, playerId: string) =>

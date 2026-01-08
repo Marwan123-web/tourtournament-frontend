@@ -43,7 +43,13 @@ export function FormInput({
       <input
         id={id}
         type={type}
-        value={value ?? ''}
+        value={
+          value !== undefined && value !== null
+            ? value
+            : type === "number"
+            ? ""
+            : ""
+        }
         onChange={onChange}
         required={required}
         disabled={disabled}
