@@ -1,14 +1,12 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Booking, Field } from "@/types/api";
-import { BookingStatus, Sport, Sports } from "@/enums/enums";
+import {  Field } from "@/types/api";
+import { Sport, Sports } from "@/enums/enums";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorBanner } from "@/components/ErrorBanner";
 import { CreateEditModal } from "@/components/CreateEditModal";
-import { StatusBadge } from "@/components/StatusBadge";
 import { fieldsApi, bookingsApi } from "@/lib/api";
-import { calculateTotalPrice, formatDate, formatTime } from "@/lib/date-utils";
 import { useTranslations } from "next-intl";
 import { FormInput } from "@/components/FormInput";
 import FieldCard from "@/components/field/FieldCard";
@@ -17,7 +15,6 @@ export default function FieldsPage() {
   const t = useTranslations("fields");
 
   const [fields, setFields] = useState<Field[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
@@ -27,39 +24,28 @@ export default function FieldsPage() {
   const [showCreateField, setShowCreateField] = useState(false);
   const [newField, setNewField] = useState({
     name: "",
-    sport: Sport.FOOTBALL as Sport,
+    sport: "FOOTBALL" as Sport,
     capacity: 11,
     address: "",
     pricePerHour: 50,
   });
 
-  useEffect(() => {
-    fetchFields();
-    fetchBookings();
-  }, []);
-
-  const fetchFields = async () => {
+  const fetchFields = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
-      const data = await fieldsApi.getFields();
+      const data = await fieldsApi.getFields(selectedDate);
       setFields(data);
     } catch (error: unknown) {
       setError(t("errors.fields"));
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedDate, t]);
 
-  const fetchBookings = async () => {
-    try {
-      setError("");
-      const data = await bookingsApi.getBookings();
-      setBookings(data);
-    } catch (error: unknown) {
-      setError(t("errors.bookings"));
-    }
-  };
+  useEffect(() => {
+    fetchFields();
+  }, [fetchFields]);
 
   const handleCreateField = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,13 +76,16 @@ export default function FieldsPage() {
     endTime: string
   ) => {
     if (!confirm(t("confirmBooking"))) return;
-
     setUpdating(true);
     setError("");
 
     try {
-      await bookingsApi.createBooking({ fieldId, startTime, endTime });
-      await fetchBookings();
+      await bookingsApi.createBooking(fieldId, {
+        date: selectedDate!,
+        startTime: startTime.split("T")[1]!,
+        endTime: endTime.split("T")[1]!,
+      });
+      await fetchFields(); // Refresh fields (new booking appears)
     } catch (error: unknown) {
       setError(t("errors.bookField"));
     } finally {
@@ -110,6 +99,7 @@ export default function FieldsPage() {
     <div className="p-8 max-w-7xl mx-auto space-y-12">
       <ErrorBanner error={error} onClear={() => setError("")} />
 
+      {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <Link
@@ -123,10 +113,24 @@ export default function FieldsPage() {
         <button
           onClick={() => setShowCreateField(true)}
           disabled={updating}
-          className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+          className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
         >
           {updating ? t("creating") : t("addField")}
         </button>
+      </div>
+
+      {/* Date Picker */}
+      <div className="flex flex-col sm:flex-row gap-4 items-center bg-white p-6 rounded-2xl border shadow-sm">
+        <label className="text-lg font-bold text-gray-900 whitespace-nowrap">
+          Select Date
+        </label>
+        <input
+          type="date"
+          value={selectedDate}
+          onChange={(e) => setSelectedDate(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent min-w-[200px]"
+          min={new Date().toISOString().split("T")[0]}
+        />
       </div>
 
       {/* Fields Grid */}
@@ -142,49 +146,6 @@ export default function FieldsPage() {
               onBook={handleBookField}
             />
           ))}
-
-          {/* {fields.map((field) => (
-            <div
-              key={field.id}
-              className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 hover:shadow-md transition-shadow flex flex-col justify-between gap-3"
-            >
-              <div className="flex items-center justify-between">
-                <h3 className="text-2xl font-bold text-gray-900">
-                  {field.name}
-                </h3>
-                <StatusBadge
-                  status={field.isAvailable ? "available" : "booked"}
-                />
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <span className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-full capitalize">
-                    {field.sport}
-                  </span>
-                  <span>
-                    {field.capacity} {t("players")}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-500">{field.address}</p>
-                <p className="text-2xl font-bold text-indigo-600">
-                  ${field.pricePerHour}/{t("perHour")}
-                </p>
-              </div>
-              {field.isAvailable && (
-                <button
-                  onClick={() => {
-                    const startTime = `${selectedDate}T18:00`;
-                    const endTime = `${selectedDate}T20:00`;
-                    handleBookField(field.id, startTime, endTime);
-                  }}
-                  disabled={updating}
-                  className="w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 font-semibold disabled:opacity-50"
-                >
-                  {updating ? t("booking") : t("bookNow")}
-                </button>
-              )}
-            </div>
-          ))} */}
         </div>
       </section>
 
@@ -205,7 +166,6 @@ export default function FieldsPage() {
           required
           disabled={updating}
         />
-
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             {t("createModal.sport")}
@@ -213,37 +173,29 @@ export default function FieldsPage() {
           <select
             value={newField.sport}
             onChange={(e) =>
-              setNewField({
-                ...newField,
-                sport: e.target.value as Sport,
-              })
+              setNewField({ ...newField, sport: e.target.value as Sport })
             }
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
             disabled={updating}
           >
             {Sports.map((sport) => (
-              <option value={sport.value} key={sport.id}>
+              <option key={sport.id} value={sport.value}>
                 {t(sport.name)}
               </option>
             ))}
           </select>
         </div>
-
         <FormInput
           label={t("createModal.capacity")}
           id="capacity"
           type="number"
           value={newField.capacity}
           onChange={(e) =>
-            setNewField({
-              ...newField,
-              capacity: parseInt(e.target.value),
-            })
+            setNewField({ ...newField, capacity: parseInt(e.target.value) })
           }
           required
           disabled={updating}
         />
-
         <FormInput
           label={t("createModal.address")}
           id="address"
@@ -254,7 +206,6 @@ export default function FieldsPage() {
           required
           disabled={updating}
         />
-
         <FormInput
           label={t("createModal.price")}
           id="price"
@@ -263,7 +214,7 @@ export default function FieldsPage() {
           onChange={(e) =>
             setNewField({
               ...newField,
-              pricePerHour: parseInt(e.target.value),
+              pricePerHour: parseFloat(e.target.value),
             })
           }
           required

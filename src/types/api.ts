@@ -84,6 +84,7 @@ export interface Field {
   address: string;
   pricePerHour: number;
   isAvailable: boolean;
+  bookings: Booking[];
 }
 
 export interface Booking {
@@ -135,4 +136,10 @@ export interface NextIntlRequestConfig {
   locale: string;
   timeZone?: string;
   now?: Date;
+}
+
+export interface Slot {
+  time: string;
+  available: boolean;
+  status: 'available' | 'booked' | 'past';
 }

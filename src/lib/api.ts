@@ -10,6 +10,7 @@ import type {
   Booking,
   Match,
   NewPlayer,
+  Slot,
 } from "@/types/api";
 import { toast } from "react-toastify";
 import { Sport } from "@/enums/enums";
@@ -97,7 +98,14 @@ export const authApi = {
 };
 
 export const fieldsApi = {
-  getFields: () => api.get<Field[]>("/api/fields").then((res) => res.data),
+  getFields: (date: Date | string) =>
+    api
+      .get<Field[]>("/api/fields", {
+        params: {
+          date,
+        },
+      })
+      .then((res) => res.data),
 
   createField: (data: {
     name: string;
@@ -109,14 +117,20 @@ export const fieldsApi = {
 };
 
 export const bookingsApi = {
-  getBookings: () =>
-    api.get<Booking[]>("/api/bookings").then((res) => res.data),
+  // getBookings: () =>
+  //   api.get<Booking[]>("/api/bookings").then((res) => res.data),
 
-  createBooking: (data: {
-    fieldId: string;
+  // getBookingSlots: (fieldId: string) =>
+  //   api.get<Slot[]>(`/api/bookings/field/${fieldId}/`).then((res) => res.data),
+
+  createBooking: (fieldId: string, data: {
+    date: Date | string;
     startTime: string;
     endTime: string;
-  }) => api.post<Booking>("/api/bookings", data).then((res) => res.data),
+  }) =>
+    api
+      .post<Booking>(`/api/bookings/${fieldId}/bookings`, data)
+      .then((res) => res.data),
 };
 
 export const matchesApi = {
