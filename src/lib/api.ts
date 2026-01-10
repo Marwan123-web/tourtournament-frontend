@@ -98,11 +98,11 @@ export const authApi = {
 };
 
 export const fieldsApi = {
-  getFields: (date: Date | string) =>
+  getFields: (payload: { date: Date | string; q: string }) =>
     api
       .get<Field[]>("/api/fields", {
         params: {
-          date,
+          ...payload,
         },
       })
       .then((res) => res.data),
@@ -123,11 +123,14 @@ export const bookingsApi = {
   // getBookingSlots: (fieldId: string) =>
   //   api.get<Slot[]>(`/api/bookings/field/${fieldId}/`).then((res) => res.data),
 
-  createBooking: (fieldId: string, data: {
-    date: Date | string;
-    startTime: string;
-    endTime: string;
-  }) =>
+  createBooking: (
+    fieldId: string,
+    data: {
+      date: Date | string;
+      startTime: string;
+      endTime: string;
+    }
+  ) =>
     api
       .post<Booking>(`/api/bookings/${fieldId}/bookings`, data)
       .then((res) => res.data),

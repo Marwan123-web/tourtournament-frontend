@@ -110,6 +110,9 @@
     "endTime": "End",
     "selectSlot": "Select slot",
     "overlapsBooking": "Overlaps existing booking",
+    "selectDate": "Select Date",
+    "selectSport": "Select Sport",
+    "AllSports": "All Sports",
     "createModal": {
       "title": "Add New Field",
       "name": "Field Name",

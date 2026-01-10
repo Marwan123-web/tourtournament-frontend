@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import {  Field } from "@/types/api";
+import { Field } from "@/types/api";
 import { Sport, Sports } from "@/enums/enums";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorBanner } from "@/components/ErrorBanner";
@@ -21,6 +21,7 @@ export default function FieldsPage() {
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
+  const [selectedSport, setSelectedSport] = useState<Sport | string>("");
   const [showCreateField, setShowCreateField] = useState(false);
   const [newField, setNewField] = useState({
     name: "",
@@ -34,14 +35,17 @@ export default function FieldsPage() {
     try {
       setLoading(true);
       setError("");
-      const data = await fieldsApi.getFields(selectedDate);
+      const data = await fieldsApi.getFields({
+        date: selectedDate,
+        q: selectedSport,
+      });
       setFields(data);
     } catch (error: unknown) {
       setError(t("errors.fields"));
     } finally {
       setLoading(false);
     }
-  }, [selectedDate, t]);
+  }, [selectedDate, selectedSport, t]);
 
   useEffect(() => {
     fetchFields();
@@ -121,16 +125,35 @@ export default function FieldsPage() {
 
       {/* Date Picker */}
       <div className="flex flex-col sm:flex-row gap-4 items-center bg-white p-6 rounded-2xl border shadow-sm">
-        <label className="text-lg font-bold text-gray-900 whitespace-nowrap">
-          Select Date
-        </label>
-        <input
-          type="date"
-          value={selectedDate}
-          onChange={(e) => setSelectedDate(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent min-w-[200px]"
-          min={new Date().toISOString().split("T")[0]}
-        />
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
+          <label className="text-lg font-bold text-gray-900 whitespace-nowrap">
+            {t("selectDate")}
+          </label>
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent min-w-[200px]"
+            min={new Date().toISOString().split("T")[0]}
+          />
+        </div>
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
+          <label className="text-lg font-bold text-gray-900 whitespace-nowrap">
+            {t("selectSport")}
+          </label>
+          <select
+            value={selectedSport}
+            onChange={(e) => setSelectedSport(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+          >
+            <option value="">{t("AllSports")}</option>
+            {Sports.map((sport) => (
+              <option key={sport.id} value={sport.value}>
+                {t(sport.name)}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Fields Grid */}
