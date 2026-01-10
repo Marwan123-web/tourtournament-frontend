@@ -54,8 +54,14 @@ export const getErrorMessage = (error: unknown): string => {
 
 export const tournamentApi = {
   // Tournaments
-  getTournaments: () =>
-    api.get<Tournament[]>("api/tournaments").then((res) => res.data),
+  getTournaments: (payload: { date: Date | string; q: string }) =>
+    api
+      .get<Tournament[]>("api/tournaments", {
+        params: {
+          q: payload.q,
+        },
+      })
+      .then((res) => res.data),
   createTournament: (data: CreateTournamentDto) =>
     api.post<Tournament>("api/tournaments", data).then((res) => res.data),
   getTournament: (id: string) =>

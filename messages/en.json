@@ -259,6 +259,9 @@
       "starts": "Starts: {date}",
       "teamCount": "{current}/{max} teams",
       "viewDetails": "View Details",
+      "selectDate": "Select Date",
+      "selectSport": "Select Sport",
+      "AllSports": "All Sports",
       "modal": {
         "title": "Create New Tournament",
         "name": "Tournament Name",

@@ -123,7 +123,7 @@ export default function FieldsPage() {
         </button>
       </div>
 
-      {/* Date Picker */}
+      {/* Date Picker and Sport */}
       <div className="flex flex-col sm:flex-row gap-4 items-center bg-white p-6 rounded-2xl border shadow-sm">
         <div className="flex flex-col sm:flex-row gap-4 items-center">
           <label className="text-lg font-bold text-gray-900 whitespace-nowrap">

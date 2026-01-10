@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Tournament } from "@/types/api";
-import { Sport, TournamentStatus } from "@/enums/enums";
+import { Sport, Sports, TournamentStatus } from "@/enums/enums";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorBanner } from "@/components/ErrorBanner";
 import { CreateEditModal } from "@/components/CreateEditModal";
@@ -29,18 +29,25 @@ export default function TournamentsPage() {
     startDate: "",
     endDate: "",
   });
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+  const [selectedSport, setSelectedSport] = useState<Sport | string>("");
   const router = useRouter();
 
   useEffect(() => {
     fetchTournaments();
-  }, []);
+  }, [selectedDate, selectedSport, t]);
 
   const fetchTournaments = async () => {
     setLoading(true);
     setError("");
 
     try {
-      const data = await tournamentApi.getTournaments();
+      const data = await tournamentApi.getTournaments({
+        date: selectedDate,
+        q: selectedSport,
+      });
       setTournaments(data);
     } catch (error: unknown) {
       setError(getErrorMessage(error));
@@ -99,6 +106,38 @@ export default function TournamentsPage() {
         >
           {t("createButton")}
         </button>
+      </div>
+      {/* Date Picker and Sport */}
+      <div className="flex flex-col sm:flex-row gap-4 items-center bg-white p-6 rounded-2xl border shadow-sm">
+        {/* <div className="flex flex-col sm:flex-row gap-4 items-center">
+          <label className="text-lg font-bold text-gray-900 whitespace-nowrap">
+            {t("selectDate")}
+          </label>
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent min-w-[200px]"
+            min={new Date().toISOString().split("T")[0]}
+          />
+        </div> */}
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
+          <label className="text-lg font-bold text-gray-900 whitespace-nowrap">
+            {t("selectSport")}
+          </label>
+          <select
+            value={selectedSport}
+            onChange={(e) => setSelectedSport(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+          >
+            <option value="">{t("AllSports")}</option>
+            {Sports.map((sport) => (
+              <option key={sport.id} value={sport.value}>
+                {t(sport.name)}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
