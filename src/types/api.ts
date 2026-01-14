@@ -141,5 +141,14 @@ export interface NextIntlRequestConfig {
 export interface Slot {
   time: string;
   available: boolean;
-  status: 'available' | 'booked' | 'past';
+  status: SlotStatus;
+  canBeStart?: boolean;
+  bookerName?: string;
+}
+
+export enum SlotStatus {
+  AVAILABLE = "available",
+  BOOKED = "booked",
+  PAST = "past",
+  MYBOOKING = "myBooking",
 }

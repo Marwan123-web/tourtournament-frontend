@@ -31,7 +31,7 @@ export default function ProfilePage() {
     try {
       const [userData, userTournaments] = await Promise.all([
         authApi.whoami(),
-        tournamentApi.getTournaments(),
+        tournamentApi.getMyTournaments({}),
       ]);
 
       setUser(userData);
@@ -196,7 +196,7 @@ export default function ProfilePage() {
           updating={updating}
           submitText={t("saveChanges")}
         >
-          <ErrorBanner error={error} onClear={() => setError('')} />
+          <ErrorBanner error={error} onClear={() => setError("")} />
 
           <FormInput
             label={t("username")}

@@ -45,8 +45,7 @@ export default function TournamentsPage() {
 
     try {
       const data = await tournamentApi.getTournaments({
-        date: selectedDate,
-        q: selectedSport,
+        sport: selectedSport,
       });
       setTournaments(data);
     } catch (error: unknown) {

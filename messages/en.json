@@ -113,6 +113,9 @@
     "selectDate": "Select Date",
     "selectSport": "Select Sport",
     "AllSports": "All Sports",
+    "clickSlot1h": "Click Slot 1H",
+    "clickFor1h": "Click For 1H",
+    "selectSlot1h": "Select Slot 1H",
     "createModal": {
       "title": "Add New Field",
       "name": "Field Name",

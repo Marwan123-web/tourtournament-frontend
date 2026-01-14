@@ -37,7 +37,7 @@ export default function FieldsPage() {
       setError("");
       const data = await fieldsApi.getFields({
         date: selectedDate,
-        q: selectedSport,
+        sport: selectedSport,
       });
       setFields(data);
     } catch (error: unknown) {

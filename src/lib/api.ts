@@ -54,12 +54,20 @@ export const getErrorMessage = (error: unknown): string => {
 
 export const tournamentApi = {
   // Tournaments
-  getTournaments: (payload: { date: Date | string; q: string }) =>
+  getTournaments: (payload: { q?: string; sport?: string; status?: string }) =>
     api
       .get<Tournament[]>("api/tournaments", {
-        params: {
-          q: payload.q,
-        },
+        params: payload,
+      })
+      .then((res) => res.data),
+  getMyTournaments: (payload: {
+    q?: string;
+    sport?: string;
+    status?: string;
+  }) =>
+    api
+      .get<Tournament[]>("api/tournaments/my", {
+        params: payload,
       })
       .then((res) => res.data),
   createTournament: (data: CreateTournamentDto) =>
@@ -104,7 +112,14 @@ export const authApi = {
 };
 
 export const fieldsApi = {
-  getFields: (payload: { date: Date | string; q: string }) =>
+  getFields: (payload: {
+    sport?: string;
+    date?: string;
+    q?: string;
+    priceFrom?: number;
+    priceTo?: number;
+    address?: string;
+  }) =>
     api
       .get<Field[]>("/api/fields", {
         params: {
